@@ -1,4 +1,5 @@
 using EcoSimGame.Data;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,6 +8,16 @@ builder.Services.AddDbContext<GameDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Account/Login";
+        options.LogoutPath = "/Account/Logout"; 
+        options.AccessDeniedPath = "/Account/AccessDenied";
+    });
+
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
@@ -21,6 +32,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
