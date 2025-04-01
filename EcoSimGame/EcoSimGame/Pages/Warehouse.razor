@@ -5,11 +5,19 @@
 
 <h3>Magazyn</h3>
 
-<div>
-    <p><strong>Drewno:</strong> @player.Materials["Drewno"]</p>
-    <p><strong>Ruda Żelaza:</strong> @player.Materials["Ruda Żelaza"]</p>
-    <p><strong>Sztabki Żelaza:</strong> @player.IronBars</p>
-</div>
+@if (player.Inventory.GetAllMaterials().Count > 0)
+{
+    <div>
+        @foreach (var item in player.Inventory.GetAllMaterials())
+        {
+            <p><strong>@item.Key:</strong> @item.Value</p>
+        }
+    </div>
+}
+else
+{
+    <p>Magazyn jest pusty.</p>
+}
 
 @code {
     private Player player = new Player();

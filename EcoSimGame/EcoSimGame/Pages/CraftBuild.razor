@@ -8,8 +8,8 @@
 
 <div>
     <p><strong>Pieniądze: </strong>@player.Money</p>
-    <p><strong>Ruda Żelaza:</strong> @player.Materials["Ruda Żelaza"]</p>
-    <p><strong>Sztabki Żelaza:</strong> @player.IronBars</p>
+    <p><strong>Ruda Żelaza:</strong> @player.Inventory.GetMaterialAmount("Ruda Żelaza")</p>
+    <p><strong>Sztabki Żelaza:</strong> @player.Inventory.GetMaterialAmount("Sztabka Żelaza")</p>
 
     @if (CanProcess())
     {
@@ -43,16 +43,15 @@
 
     private bool CanProcess()
     {
-        return player.Materials["Ruda Żelaza"] >= 2 &&
+        return player.Inventory.GetMaterialAmount("Ruda Żelaza") >= 2 &&
                (player.LastProcessingTime == null || DateTime.Now >= player.LastProcessingTime.Value.AddMinutes(1));
     }
 
     private async Task StartProcessing()
     {
-        if (player.Materials["Ruda Żelaza"] >= 2)
+        if (player.Inventory.RemoveMaterial("Ruda Żelaza", 2))
         {
-            player.Materials["Ruda Żelaza"] -= 2; 
-            player.LastProcessingTime = DateTime.Now; 
+            player.LastProcessingTime = DateTime.Now;
             await localStorage.SetItemAsync("player", player);
 
             UpdateProcessingStatus();
@@ -66,9 +65,9 @@
             var timeLeft = player.LastProcessingTime.Value.AddMinutes(1) - DateTime.Now;
             if (timeLeft.TotalSeconds <= 0)
             {
-                player.IronBars++; 
-                player.LastProcessingTime = null; 
-                localStorage.SetItemAsync("player", player); 
+                player.Inventory.AddMaterial("Sztabka Żelaza", 1);
+                player.LastProcessingTime = null;
+                localStorage.SetItemAsync("player", player);
                 processingTimeLeft = string.Empty;
             }
             else
@@ -84,8 +83,5 @@
         }
     }
 
-    public void Dispose()
-    {
-        _timer?.Dispose();
-    }
+    public void Dispose() => _timer?.Dispose();
 }

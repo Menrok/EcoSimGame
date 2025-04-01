@@ -1,4 +1,8 @@
 ﻿@inherits LayoutComponentBase
+@inject ILocalStorageService localStorage
+@using Blazored.LocalStorage
+@using EcoSimGame.Models;
+
 <div class="page">
     <div class="sidebar">
         <NavMenu />
@@ -6,7 +10,10 @@
 
     <main>
         <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+            <div class="user-info">
+                <span><strong>@player.Name</strong></span> |
+                <span>Pieniądze: <strong>@player.Money</strong></span>
+            </div>
         </div>
 
         <article class="content px-4">
@@ -14,3 +21,29 @@
         </article>
     </main>
 </div>
+
+@code {
+    private Player player = new Player();
+    private System.Threading.Timer _timer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var storedPlayer = await localStorage.GetItemAsync<Player>("player");
+        if (storedPlayer != null)
+            player = storedPlayer;
+
+        _timer = new System.Threading.Timer(async _ => await UpdateMoney(), null, 0, 100);
+    }
+
+    private async Task UpdateMoney()
+    {
+        var storedPlayer = await localStorage.GetItemAsync<Player>("player");
+        if (storedPlayer != null)
+        {
+            player.Money = storedPlayer.Money;
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    public void Dispose() =>  _timer?.Dispose();
+}

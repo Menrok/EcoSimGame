@@ -2,19 +2,15 @@
 
 public class Player
 {
+    public string Name { get; set; }
     public decimal Money { get; set; }
-    public Dictionary<string, int> Materials { get; set; }
-    public int IronBars { get; set; } 
+    public Inventory Inventory { get; set; }
     public DateTime? LastProcessingTime { get; set; }
 
     public Player()
     {
+        Name = "Menrok";
         Money = 100.0m;
-        Materials = new Dictionary<string, int>
-        {
-            { "Drewno", 0 },
-            { "Ruda Żelaza", 0 }
-        };
-        IronBars = 0;
+        Inventory = new Inventory();
     }
 }

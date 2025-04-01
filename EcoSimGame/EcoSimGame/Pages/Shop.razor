@@ -15,9 +15,9 @@
 
 <div>
     <h4>Sprzedaż</h4>
-    <p><strong>Sprzedaj Drewno</strong> Ilość: 10</p>
+    <p><strong>Sprzedaj Drewno</strong> Cena: 10</p>
     <button @onclick="SellWood">Sprzedaj Drewno</button>
-    <p><strong>Sprzedaj Rudę Żelaza</strong> Ilość: 15</p>
+    <p><strong>Sprzedaj Rudę Żelaza</strong> Cena: 15</p>
     <button @onclick="SellIronOre">Sprzedaj Rudę Żelaza</button>
     <p><strong>Sprzedaj Sztabkę Żelaza</strong> Cena: 40</p>
     <button @onclick="SellIronBar">Sprzedaj Sztabkę Żelaza</button>
@@ -40,7 +40,7 @@
         if (player.Money >= 10)
         {
             player.Money -= 10;
-            player.Materials["Drewno"]++;
+            player.Inventory.AddMaterial("Drewno", 1);
             await localStorage.SetItemAsync("player", player);
         }
     }
@@ -50,37 +50,34 @@
         if (player.Money >= 15)
         {
             player.Money -= 15;
-            player.Materials["Ruda Żelaza"]++;
+            player.Inventory.AddMaterial("Ruda Żelaza", 1);
             await localStorage.SetItemAsync("player", player);
         }
     }
 
     private async Task SellWood()
     {
-        if (player.Materials["Drewno"] > 0)
+        if (player.Inventory.RemoveMaterial("Drewno", 1))
         {
             player.Money += 10;
-            player.Materials["Drewno"]--;
             await localStorage.SetItemAsync("player", player);
         }
     }
 
     private async Task SellIronOre()
     {
-        if (player.Materials["Ruda Żelaza"] > 0)
+        if (player.Inventory.RemoveMaterial("Ruda Żelaza", 1))
         {
             player.Money += 15;
-            player.Materials["Ruda Żelaza"]--;
             await localStorage.SetItemAsync("player", player);
         }
     }
 
     private async Task SellIronBar()
     {
-        if (player.IronBars > 0)
+        if (player.Inventory.RemoveMaterial("Sztabka Żelaza", 1))
         {
             player.Money += 40;
-            player.IronBars--;
             await localStorage.SetItemAsync("player", player);
         }
     }
