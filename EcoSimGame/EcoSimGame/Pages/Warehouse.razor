@@ -1,0 +1,25 @@
+﻿@page "/Warehouse"
+@using Blazored.LocalStorage
+@using EcoSimGame.Models;
+@inject ILocalStorageService localStorage
+
+<h3>Magazyn</h3>
+
+<div>
+    <p><strong>Drewno:</strong> @player.Materials["Drewno"]</p>
+    <p><strong>Ruda Żelaza:</strong> @player.Materials["Ruda Żelaza"]</p>
+    <p><strong>Sztabki Żelaza:</strong> @player.IronBars</p>
+</div>
+
+@code {
+    private Player player = new Player();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var storedPlayer = await localStorage.GetItemAsync<Player>("player");
+        if (storedPlayer != null)
+        {
+            player = storedPlayer;
+        }
+    }
+}

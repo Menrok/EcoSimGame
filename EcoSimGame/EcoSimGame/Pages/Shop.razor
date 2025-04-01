@@ -1,0 +1,87 @@
+﻿@page "/Shop"
+@using Blazored.LocalStorage
+@using EcoSimGame.Models
+@inject ILocalStorageService localStorage
+
+<h3>Sklep</h3>
+
+<div>
+    <p><strong>Pieniądze: </strong>@player.Money</p>
+    <p><strong>Materiał: Drewno</strong> Cena: 10</p>
+    <button @onclick="BuyWood">Kup Drewno</button>
+    <p><strong>Materiał: Ruda Żelaza</strong> Cena: 15</p>
+    <button @onclick="BuyIronOre">Kup Rudę Żelaza</button>
+</div>
+
+<div>
+    <h4>Sprzedaż</h4>
+    <p><strong>Sprzedaj Drewno</strong> Ilość: 10</p>
+    <button @onclick="SellWood">Sprzedaj Drewno</button>
+    <p><strong>Sprzedaj Rudę Żelaza</strong> Ilość: 15</p>
+    <button @onclick="SellIronOre">Sprzedaj Rudę Żelaza</button>
+    <p><strong>Sprzedaj Sztabkę Żelaza</strong> Cena: 40</p>
+    <button @onclick="SellIronBar">Sprzedaj Sztabkę Żelaza</button>
+</div>
+
+@code {
+    private Player player = new Player();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var storedPlayer = await localStorage.GetItemAsync<Player>("player");
+        if (storedPlayer != null)
+        {
+            player = storedPlayer;
+        }
+    }
+
+    private async Task BuyWood()
+    {
+        if (player.Money >= 10)
+        {
+            player.Money -= 10;
+            player.Materials["Drewno"]++;
+            await localStorage.SetItemAsync("player", player);
+        }
+    }
+
+    private async Task BuyIronOre()
+    {
+        if (player.Money >= 15)
+        {
+            player.Money -= 15;
+            player.Materials["Ruda Żelaza"]++;
+            await localStorage.SetItemAsync("player", player);
+        }
+    }
+
+    private async Task SellWood()
+    {
+        if (player.Materials["Drewno"] > 0)
+        {
+            player.Money += 10;
+            player.Materials["Drewno"]--;
+            await localStorage.SetItemAsync("player", player);
+        }
+    }
+
+    private async Task SellIronOre()
+    {
+        if (player.Materials["Ruda Żelaza"] > 0)
+        {
+            player.Money += 15;
+            player.Materials["Ruda Żelaza"]--;
+            await localStorage.SetItemAsync("player", player);
+        }
+    }
+
+    private async Task SellIronBar()
+    {
+        if (player.IronBars > 0)
+        {
+            player.Money += 40;
+            player.IronBars--;
+            await localStorage.SetItemAsync("player", player);
+        }
+    }
+}

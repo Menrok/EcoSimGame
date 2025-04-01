@@ -1,0 +1,91 @@
+﻿@page "/CraftBuild"
+
+@using Blazored.LocalStorage
+@using EcoSimGame.Models;
+@inject ILocalStorageService localStorage
+
+<h3>Budowa przetwarzania rudy żelaza</h3>
+
+<div>
+    <p><strong>Pieniądze: </strong>@player.Money</p>
+    <p><strong>Ruda Żelaza:</strong> @player.Materials["Ruda Żelaza"]</p>
+    <p><strong>Sztabki Żelaza:</strong> @player.IronBars</p>
+
+    @if (CanProcess())
+    {
+        <button @onclick="StartProcessing">Rozpocznij przetwarzanie</button>
+    }
+    else if (player.LastProcessingTime.HasValue)
+    {
+        <p>Przetwarzanie trwa: @processingTimeLeft</p>
+    }
+    else
+    {
+        <p>Brak wystarczającej ilości rudy żelaza do przetwarzania.</p>
+    }
+</div>
+
+@code {
+    private Player player = new Player();
+    private string processingTimeLeft = string.Empty;
+    private Timer _timer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var storedPlayer = await localStorage.GetItemAsync<Player>("player");
+        if (storedPlayer != null)
+        {
+            player = storedPlayer;
+        }
+
+        _timer = new Timer(UpdateProcessingStatus, null, 0, 1000);
+    }
+
+    private bool CanProcess()
+    {
+        return player.Materials["Ruda Żelaza"] >= 2 &&
+               (player.LastProcessingTime == null || DateTime.Now >= player.LastProcessingTime.Value.AddMinutes(1));
+    }
+
+    private async Task StartProcessing()
+    {
+        if (player.Materials["Ruda Żelaza"] >= 2)
+        {
+            player.Materials["Ruda Żelaza"] -= 2; 
+            player.LastProcessingTime = DateTime.Now; 
+            await localStorage.SetItemAsync("player", player);
+
+            UpdateProcessingStatus();
+        }
+    }
+
+    private void UpdateProcessingStatus(object state = null)
+    {
+        if (player.LastProcessingTime.HasValue)
+        {
+            var timeLeft = player.LastProcessingTime.Value.AddMinutes(1) - DateTime.Now;
+            if (timeLeft.TotalSeconds <= 0)
+            {
+                player.IronBars++; 
+                player.LastProcessingTime = null; 
+                localStorage.SetItemAsync("player", player); 
+                processingTimeLeft = string.Empty;
+            }
+            else
+            {
+                processingTimeLeft = $"{timeLeft.Minutes} min {timeLeft.Seconds} s";
+                InvokeAsync(StateHasChanged);
+            }
+        }
+        else
+        {
+            processingTimeLeft = string.Empty;
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    public void Dispose()
+    {
+        _timer?.Dispose();
+    }
+}
