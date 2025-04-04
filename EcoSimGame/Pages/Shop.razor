@@ -1,12 +1,13 @@
 ﻿@page "/Shop"
 @using Blazored.LocalStorage
 @using EcoSimGame.Models
+@using EcoSimGame.Models.List
 @inject ILocalStorageService localStorage
 
 <h3>Sklep</h3>
 
 <div>
-    <p><strong>Pieniądze: </strong>@player.Money</p>
+    <h4>Zakupy</h4>
     <p><strong>Materiał: Drewno</strong> Cena: 10</p>
     <button @onclick="BuyWood">Kup Drewno</button>
     <p><strong>Materiał: Ruda Żelaza</strong> Cena: 15</p>
@@ -23,6 +24,18 @@
     <button @onclick="SellIronBar">Sprzedaj Sztabkę Żelaza</button>
 </div>
 
+<div>
+    <h4>Stan Konta i Magazyn</h4>
+    <p>Stan konta: @player.Money zł</p>
+    <h5>Materiały w magazynie:</h5>
+    <ul>
+        @foreach (var material in player.Inventory.Stocks)
+        {
+            <li>@material.MaterialName: @material.Quantity sztuk</li>
+        }
+    </ul>
+</div>
+
 @code {
     private Player player = new Player();
 
@@ -37,47 +50,52 @@
 
     private async Task BuyWood()
     {
-        if (player.Money >= 10)
+        var material = MaterialList.AllMaterials.FirstOrDefault(m => m.Name == "Drewno");
+        if (material != null && player.Money >= material.Price)
         {
-            player.Money -= 10;
-            player.Inventory.AddMaterial("Drewno", 1);
+            player.Money -= material.Price;
+            player.Inventory.Add("Drewno", 1);
             await localStorage.SetItemAsync("player", player);
         }
     }
 
     private async Task BuyIronOre()
     {
-        if (player.Money >= 15)
+        var material = MaterialList.AllMaterials.FirstOrDefault(m => m.Name == "Ruda żelaza");
+        if (material != null && player.Money >= material.Price)
         {
-            player.Money -= 15;
-            player.Inventory.AddMaterial("Ruda Żelaza", 1);
+            player.Money -= material.Price;
+            player.Inventory.Add("Ruda żelaza", 1);
             await localStorage.SetItemAsync("player", player);
         }
     }
 
     private async Task SellWood()
     {
-        if (player.Inventory.RemoveMaterial("Drewno", 1))
+        var material = MaterialList.AllMaterials.FirstOrDefault(m => m.Name == "Drewno");
+        if (material != null && player.Inventory.Remove("Drewno", 1))
         {
-            player.Money += 10;
+            player.Money += material.Price;
             await localStorage.SetItemAsync("player", player);
         }
     }
 
     private async Task SellIronOre()
     {
-        if (player.Inventory.RemoveMaterial("Ruda Żelaza", 1))
+        var material = MaterialList.AllMaterials.FirstOrDefault(m => m.Name == "Ruda żelaza");
+        if (material != null && player.Inventory.Remove("Ruda żelaza", 1))
         {
-            player.Money += 15;
+            player.Money += material.Price;
             await localStorage.SetItemAsync("player", player);
         }
     }
 
     private async Task SellIronBar()
     {
-        if (player.Inventory.RemoveMaterial("Sztabka Żelaza", 1))
+        var material = MaterialList.AllMaterials.FirstOrDefault(m => m.Name == "Sztabka Żelaza");
+        if (material != null && player.Inventory.Remove("Sztabka żelaza", 1))
         {
-            player.Money += 40;
+            player.Money += material.Price;
             await localStorage.SetItemAsync("player", player);
         }
     }

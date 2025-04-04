@@ -41,8 +41,3 @@ node_modules/
 
 # NuGet
 .nuget/
-# Uncomment if you have a global NuGet package cache
-# ~/.nuget/packages/
-
-# ASP.NET Core
-wwwroot/

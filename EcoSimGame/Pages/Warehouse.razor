@@ -1,16 +1,16 @@
 ﻿@page "/Warehouse"
 @using Blazored.LocalStorage
-@using EcoSimGame.Models;
+@using EcoSimGame.Models
 @inject ILocalStorageService localStorage
 
 <h3>Magazyn</h3>
 
-@if (player.Inventory.GetAllMaterials().Count > 0)
+@if (player.Inventory.GetAllWithQuantity().Count > 0)
 {
     <div>
-        @foreach (var item in player.Inventory.GetAllMaterials())
+        @foreach (var stock in player.Inventory.GetAllWithQuantity())
         {
-            <p><strong>@item.Key:</strong> @item.Value</p>
+            <p><strong>@stock.MaterialName:</strong> @stock.Quantity sztuk</p>
         }
     </div>
 }
