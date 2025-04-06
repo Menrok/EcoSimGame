@@ -1,0 +1,97 @@
+﻿@page "/ProductionTree"
+@using Blazored.LocalStorage
+@using EcoSimGame.Models
+@inject ILocalStorageService localStorage
+
+<h3>Drzewko Produkcji</h3>
+
+<p>Twoje doświadczenie: @player.Experience</p>
+<p>Twoje pieniądze: @player.Money</p>
+
+<ul>
+    @if (productionTree != null)
+    {
+        @foreach (var node in productionTree.Nodes)
+        {
+            <li>
+                <div>
+                    <strong>@node.Name</strong>
+                    @if (node.IsUnlocked)
+                    {
+                        <span>(Odblokowane)</span>
+                        @if (!player.HasSchematic(node.Name))
+                        {
+                            <button @onclick="() => BuySchematic(node)">Kup schemat (Wymagane: @node.RequiredExperience XP, @node.CostMoney zł)</button>
+                        }
+                        else
+                        {
+                            <span>(Schemat zakupiony)</span>
+                        }
+                    }
+                    else
+                    {
+                        @if (player.Experience >= node.RequiredExperience)
+                        {
+                            <button @onclick="() => UnlockSchematic(node)">Odblokuj schemat (Wymagane: @node.RequiredExperience XP)</button>
+                        }
+                        else
+                        {
+                            <span>Wymagane doświadczenie: @node.RequiredExperience</span>
+                        }
+                    }
+                </div>
+            </li>
+        }
+    }
+</ul>
+
+@code {
+    private Player player = new Player();
+    private ProductionTree productionTree;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var storedPlayer = await localStorage.GetItemAsync<Player>("player");
+        if (storedPlayer != null)
+        {
+            player = storedPlayer;
+        }
+
+        productionTree = new ProductionTree();
+
+        UpdateUnlockStatus();
+    }
+
+    private async Task UnlockSchematic(ProductionNode node)
+    {
+        if (player.Experience >= node.RequiredExperience)
+        {
+            node.IsUnlocked = true;
+            await localStorage.SetItemAsync("player", player);
+        }
+    }
+
+    private async Task BuySchematic(ProductionNode node)
+    {
+        if (player.Experience >= node.RequiredExperience && player.Money >= node.CostMoney)
+        {
+            player.Experience -= node.RequiredExperience;
+            player.Money -= node.CostMoney;
+
+            player.OwnedSchematics.Add(node.Name);
+
+            await localStorage.SetItemAsync("player", player);
+        }
+    }
+
+    private void UpdateUnlockStatus()
+    {
+        foreach (var node in productionTree.Nodes)
+        {
+            if (player.Experience >= node.RequiredExperience)
+            {
+                node.IsUnlocked = true;
+            }
+        }
+    }
+}

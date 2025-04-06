@@ -6,34 +6,24 @@
 
 <h3>Sklep</h3>
 
-<div>
-    <h4>Zakupy</h4>
-    <p><strong>Materiał: Drewno</strong> Cena: 10</p>
-    <button @onclick="BuyWood">Kup Drewno</button>
-    <p><strong>Materiał: Ruda Żelaza</strong> Cena: 15</p>
-    <button @onclick="BuyIronOre">Kup Rudę Żelaza</button>
-</div>
+<div class="shop-container">
+    <div class="shop-left">
+        <h4>Zakupy</h4>
+        <p><strong>Materiał: Drewno</strong> Cena: 10</p>
+        <button @onclick="BuyWood">Kup Drewno</button>
+        <p><strong>Materiał: Ruda Żelaza</strong> Cena: 15</p>
+        <button @onclick="BuyIronOre">Kup Rudę Żelaza</button>
+    </div>
 
-<div>
-    <h4>Sprzedaż</h4>
-    <p><strong>Sprzedaj Drewno</strong> Cena: 10</p>
-    <button @onclick="SellWood">Sprzedaj Drewno</button>
-    <p><strong>Sprzedaj Rudę Żelaza</strong> Cena: 15</p>
-    <button @onclick="SellIronOre">Sprzedaj Rudę Żelaza</button>
-    <p><strong>Sprzedaj Sztabkę Żelaza</strong> Cena: 40</p>
-    <button @onclick="SellIronBar">Sprzedaj Sztabkę Żelaza</button>
-</div>
-
-<div>
-    <h4>Stan Konta i Magazyn</h4>
-    <p>Stan konta: @player.Money zł</p>
-    <h5>Materiały w magazynie:</h5>
-    <ul>
-        @foreach (var material in player.Inventory.Stocks)
-        {
-            <li>@material.MaterialName: @material.Quantity sztuk</li>
-        }
-    </ul>
+    <div class="shop-right">
+        <h4>Sprzedaż</h4>
+        <p><strong>Sprzedaj Drewno</strong> Cena: 10</p>
+        <button @onclick="SellWood">Sprzedaj Drewno</button>
+        <p><strong>Sprzedaj Rudę Żelaza</strong> Cena: 15</p>
+        <button @onclick="SellIronOre">Sprzedaj Rudę Żelaza</button>
+        <p><strong>Sprzedaj Sztabkę Żelaza</strong> Cena: 40</p>
+        <button @onclick="SellIronBar">Sprzedaj Sztabkę Żelaza</button>
+    </div>
 </div>
 
 @code {
