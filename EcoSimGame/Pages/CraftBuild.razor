@@ -6,27 +6,42 @@
 <h3>Produkcja</h3>
 
 <div>
+    <p><strong>Drewno:</strong> @player.Inventory.GetQuantity("Drewno")</p>
+    <p><strong>Deski:</strong> @player.Inventory.GetQuantity("Deski")</p>
+
     <p><strong>Ruda Żelaza:</strong> @player.Inventory.GetQuantity("Ruda żelaza")</p>
     <p><strong>Sztabki Żelaza:</strong> @player.Inventory.GetQuantity("Sztabka żelaza")</p>
 
-    @if (CanProcess())
+    <p><strong>Glina:</strong> @player.Inventory.GetQuantity("Glina")</p>
+    <p><strong>Cegły:</strong> @player.Inventory.GetQuantity("Cegła")</p>
+
+    <p><strong>Len:</strong> @player.Inventory.GetQuantity("Len")</p>
+    <p><strong>Płótno:</strong> @player.Inventory.GetQuantity("Płótno")</p>
+
+    @if (CanProduceWoodenPlanks())
     {
-        <button @onclick="StartProcessing">Rozpocznij przetwarzanie</button>
+        <button @onclick="ProduceWoodenPlanks">Produkuj Deski</button>
     }
-    else if (player.LastProcessingTime.HasValue)
+
+    @if (CanProduceIronBars())
     {
-        <p>Przetwarzanie trwa: @processingTimeLeft</p>
+        <button @onclick="ProduceIronBars">Produkuj Sztabki Żelaza</button>
     }
-    else
+
+    @if (CanProduceBricks())
     {
-        <p>Brak wystarczającej ilości rudy żelaza do przetwarzania.</p>
+        <button @onclick="ProduceBricks">Produkuj Cegły</button>
     }
+
+    @if (CanProduceCloth())
+    {
+        <button @onclick="ProduceCloth">Produkuj Płótno</button>
+    }
+
 </div>
 
 @code {
     private Player player = new Player();
-    private string processingTimeLeft = string.Empty;
-    private Timer _timer;
 
     protected override async Task OnInitializedAsync()
     {
@@ -36,56 +51,62 @@
             player = storedPlayer;
         }
 
-        UpdateProcessingStatus();
-
-        _timer = new Timer(UpdateProcessingStatus, null, 0, 1000);
+        await localStorage.SetItemAsync("player", player);
     }
 
-    private bool CanProcess()
+    private bool CanProduceWoodenPlanks()
     {
-        return player.Inventory.GetQuantity("Ruda żelaza") >= 2 &&
-               (player.LastProcessingTime == null || DateTime.Now >= player.LastProcessingTime.Value.AddMinutes(1));
+        return player.Inventory.GetQuantity("Drewno") >= 2;
     }
 
-    private async Task StartProcessing()
+    private bool CanProduceIronBars()
     {
-        if (player.Inventory.Remove("Ruda żelaza", 2))
+        return player.Inventory.GetQuantity("Ruda żelaza") >= 2;
+    }
+
+    private bool CanProduceBricks()
+    {
+        return player.Inventory.GetQuantity("Glina") >= 2;
+    }
+
+    private bool CanProduceCloth()
+    {
+        return player.Inventory.GetQuantity("Len") >= 2;
+    }
+
+    private async Task ProduceWoodenPlanks()
+    {
+        if (player.Inventory.Remove("Drewno", 2))
         {
-            player.LastProcessingTime = DateTime.Now;
+            player.Inventory.Add("Deski", 1);
             await localStorage.SetItemAsync("player", player);
-
-            UpdateProcessingStatus();
         }
     }
 
-    private void UpdateProcessingStatus(object state = null)
+    private async Task ProduceIronBars()
     {
-        if (player.LastProcessingTime.HasValue)
+        if (player.Inventory.Remove("Ruda żelaza", 2)) 
         {
-            var timeLeft = player.LastProcessingTime.Value.AddMinutes(1) - DateTime.Now;
-
-            if (timeLeft.TotalSeconds <= 0)
-            {
-                player.Inventory.Add("Sztabka żelaza", 1);
-                player.LastProcessingTime = null;
-                localStorage.SetItemAsync("player", player);
-                processingTimeLeft = string.Empty;
-            }
-            else
-            {
-                processingTimeLeft = $"{timeLeft.Minutes} min {timeLeft.Seconds} s";
-            }
+            player.Inventory.Add("Sztabka żelaza", 1);
+            await localStorage.SetItemAsync("player", player);
         }
-        else
-        {
-            processingTimeLeft = string.Empty;
-        }
-
-        InvokeAsync(StateHasChanged);
     }
 
-    public void Dispose()
+    private async Task ProduceBricks()
     {
-        _timer?.Dispose();
+        if (player.Inventory.Remove("Glina", 2))
+        {
+            player.Inventory.Add("Cegła", 1);
+            await localStorage.SetItemAsync("player", player);
+        }
+    }
+
+    private async Task ProduceCloth()
+    {
+        if (player.Inventory.Remove("Len", 2))
+        {
+            player.Inventory.Add("Płótno", 1);
+            await localStorage.SetItemAsync("player", player);
+        }
     }
 }

@@ -11,18 +11,28 @@
         <h4>Zakupy</h4>
         <p><strong>Materiał: Drewno</strong> Cena: 10</p>
         <button @onclick="BuyWood">Kup Drewno</button>
-        <p><strong>Materiał: Ruda Żelaza</strong> Cena: 15</p>
+        <p><strong>Materiał: Ruda Żelaza</strong> Cena: 10</p>
         <button @onclick="BuyIronOre">Kup Rudę Żelaza</button>
+        <p><strong>Materiał: Glina</strong> Cena: 10</p>
+        <button @onclick="BuyClay">Kup Glinę</button>
+        <p><strong>Materiał: Len</strong> Cena: 10</p>
+        <button @onclick="BuyFlax">Kup Len</button>
     </div>
 
     <div class="shop-right">
         <h4>Sprzedaż</h4>
-        <p><strong>Sprzedaj Drewno</strong> Cena: 10</p>
-        <button @onclick="SellWood">Sprzedaj Drewno</button>
-        <p><strong>Sprzedaj Rudę Żelaza</strong> Cena: 15</p>
-        <button @onclick="SellIronOre">Sprzedaj Rudę Żelaza</button>
-        <p><strong>Sprzedaj Sztabkę Żelaza</strong> Cena: 40</p>
+        <p><strong>Sprzedaj Deski</strong> Cena: 30</p>
+        <button @onclick="SellPlanks">Sprzedaj Deski</button>
+        <p><strong>Sprzedaj Sztabkę Żelaza</strong> Cena: 30</p>
         <button @onclick="SellIronBar">Sprzedaj Sztabkę Żelaza</button>
+        <p><strong>Sprzedaj Cegły</strong> Cena: 30</p>
+        <button @onclick="SellBricks">Sprzedaj Cegły</button>
+        <p><strong>Sprzedaj Płótno</strong> Cena: 30</p>
+        <button @onclick="SellCloth">Sprzedaj Płótno</button>
+        <p><strong>Sprzedaj Narzędzia</strong> Cena: 200</p>
+        <button @onclick="SellTools">Sprzedaj Narzędzia</button>
+        <p><strong>Sprzedaj Odzież</strong> Cena: 200</p>
+        <button @onclick="SellClothing">Sprzedaj Odzież</button>
     </div>
 </div>
 
@@ -60,20 +70,32 @@
         }
     }
 
-    private async Task SellWood()
+    private async Task BuyClay()
     {
-        var material = MaterialList.AllMaterials.FirstOrDefault(m => m.Name == "Drewno");
-        if (material != null && player.Inventory.Remove("Drewno", 1))
+        var material = MaterialList.AllMaterials.FirstOrDefault(m => m.Name == "Glina");
+        if (material != null && player.Money >= material.Price)
         {
-            player.Money += material.Price;
+            player.Money -= material.Price;
+            player.Inventory.Add("Glina", 1);
             await localStorage.SetItemAsync("player", player);
         }
     }
 
-    private async Task SellIronOre()
+    private async Task BuyFlax()
     {
-        var material = MaterialList.AllMaterials.FirstOrDefault(m => m.Name == "Ruda żelaza");
-        if (material != null && player.Inventory.Remove("Ruda żelaza", 1))
+        var material = MaterialList.AllMaterials.FirstOrDefault(m => m.Name == "Len");
+        if (material != null && player.Money >= material.Price)
+        {
+            player.Money -= material.Price;
+            player.Inventory.Add("Len", 1);
+            await localStorage.SetItemAsync("player", player);
+        }
+    }
+
+    private async Task SellPlanks()
+    {
+        var material = MaterialList.AllMaterials.FirstOrDefault(m => m.Name == "Deski");
+        if (material != null && player.Inventory.Remove("Deski", 1))
         {
             player.Money += material.Price;
             await localStorage.SetItemAsync("player", player);
@@ -82,8 +104,48 @@
 
     private async Task SellIronBar()
     {
-        var material = MaterialList.AllMaterials.FirstOrDefault(m => m.Name == "Sztabka Żelaza");
+        var material = MaterialList.AllMaterials.FirstOrDefault(m => m.Name == "Sztabka żelaza");
         if (material != null && player.Inventory.Remove("Sztabka żelaza", 1))
+        {
+            player.Money += material.Price;
+            await localStorage.SetItemAsync("player", player);
+        }
+    }
+
+    private async Task SellBricks()
+    {
+        var material = MaterialList.AllMaterials.FirstOrDefault(m => m.Name == "Cegła");
+        if (material != null && player.Inventory.Remove("Cegła", 1))
+        {
+            player.Money += material.Price;
+            await localStorage.SetItemAsync("player", player);
+        }
+    }
+
+    private async Task SellCloth()
+    {
+        var material = MaterialList.AllMaterials.FirstOrDefault(m => m.Name == "Płótno");
+        if (material != null && player.Inventory.Remove("Płótno", 1))
+        {
+            player.Money += material.Price;
+            await localStorage.SetItemAsync("player", player);
+        }
+    }
+
+    private async Task SellTools()
+    {
+        var material = MaterialList.AllMaterials.FirstOrDefault(m => m.Name == "Narzędzia");
+        if (material != null && player.Inventory.Remove("Narzędzia", 1))
+        {
+            player.Money += material.Price;
+            await localStorage.SetItemAsync("player", player);
+        }
+    }
+
+    private async Task SellClothing()
+    {
+        var material = MaterialList.AllMaterials.FirstOrDefault(m => m.Name == "Odzież");
+        if (material != null && player.Inventory.Remove("Odzież", 1))
         {
             player.Money += material.Price;
             await localStorage.SetItemAsync("player", player);
