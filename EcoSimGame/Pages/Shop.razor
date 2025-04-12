@@ -2,42 +2,62 @@
 @using Blazored.LocalStorage
 @using EcoSimGame.Models
 @using EcoSimGame.Models.List
+@using EcoSimGame.Services
 @inject ILocalStorageService localStorage
+@inject MarketService market
 
 <h3>Sklep</h3>
 
-<div class="shop-container">
-    <div class="shop-left">
-        <h4>Zakupy</h4>
-        <p><strong>Materiał: Drewno</strong> Cena: 10</p>
-        <button @onclick="BuyWood">Kup Drewno</button>
-        <p><strong>Materiał: Ruda Żelaza</strong> Cena: 10</p>
-        <button @onclick="BuyIronOre">Kup Rudę Żelaza</button>
-        <p><strong>Materiał: Glina</strong> Cena: 10</p>
-        <button @onclick="BuyClay">Kup Glinę</button>
-        <p><strong>Materiał: Len</strong> Cena: 10</p>
-        <button @onclick="BuyFlax">Kup Len</button>
-    </div>
+<p><em>Ceny zmienią się za: @secondsLeft s</em></p>
 
-    <div class="shop-right">
-        <h4>Sprzedaż</h4>
-        <p><strong>Sprzedaj Deski</strong> Cena: 30</p>
-        <button @onclick="SellPlanks">Sprzedaj Deski</button>
-        <p><strong>Sprzedaj Sztabkę Żelaza</strong> Cena: 30</p>
-        <button @onclick="SellIronBar">Sprzedaj Sztabkę Żelaza</button>
-        <p><strong>Sprzedaj Cegły</strong> Cena: 30</p>
-        <button @onclick="SellBricks">Sprzedaj Cegły</button>
-        <p><strong>Sprzedaj Płótno</strong> Cena: 30</p>
-        <button @onclick="SellCloth">Sprzedaj Płótno</button>
-        <p><strong>Sprzedaj Narzędzia</strong> Cena: 200</p>
-        <button @onclick="SellTools">Sprzedaj Narzędzia</button>
-        <p><strong>Sprzedaj Odzież</strong> Cena: 200</p>
-        <button @onclick="SellClothing">Sprzedaj Odzież</button>
+@if (buyableMaterials != null && sellableMaterialsProcessed != null && sellableMaterialsProducts != null)
+{
+    <div class="shop-container">
+        <div class="shop-left">
+            <h4>Zakupy</h4>
+            @foreach (var material in buyableMaterials)
+            {
+                var price = market.GetPrice(material.Name);
+                <p><strong>@material.Name</strong> – Cena: @price</p>
+                <button @onclick="() => Buy(material.Name)" disabled="@(player.Money < price)">Kup</button>
+            }
+        </div>
+
+        <div class="shop-right">
+            <h4>Sprzedaż</h4>
+
+            <h5>Materiały przetworzone</h5>
+            @foreach (var material in sellableMaterialsProcessed)
+            {
+                var quantity = player.Inventory.GetQuantity(material.Name);
+                var price = market.GetPrice(material.Name);
+                <p><strong>@material.Name</strong> – Cena: @price (Masz: @quantity)</p>
+                <button @onclick="() => Sell(material.Name)" disabled="@(quantity == 0)">Sprzedaj</button>
+            }
+
+            <h5>Produkty</h5>
+            @foreach (var material in sellableMaterialsProducts)
+            {
+                var quantity = player.Inventory.GetQuantity(material.Name);
+                var price = market.GetPrice(material.Name);
+                <p><strong>@material.Name</strong> – Cena: @price (Masz: @quantity)</p>
+                <button @onclick="() => Sell(material.Name)" disabled="@(quantity == 0)">Sprzedaj</button>
+            }
+        </div>
     </div>
-</div>
+}
+else
+{
+    <p>Ładowanie danych sklepu...</p>
+}
 
 @code {
-    private Player player = new Player();
+    private Player player = new();
+    private List<Material> buyableMaterials = new();
+    private List<Material> sellableMaterialsProcessed = new();
+    private List<Material> sellableMaterialsProducts = new();
+    private System.Timers.Timer refreshTimer;
+    private int secondsLeft = 30;
 
     protected override async Task OnInitializedAsync()
     {
@@ -46,108 +66,55 @@
         {
             player = storedPlayer;
         }
+
+        buyableMaterials = MaterialList.AllMaterials
+            .Where(m => new[] { "Drewno", "Ruda żelaza", "Glina", "Len" }.Contains(m.Name))
+            .ToList();
+
+        sellableMaterialsProcessed = MaterialList.AllMaterials
+            .Where(m => new[] { "Deski", "Sztabka żelaza", "Cegła", "Płótno" }.Contains(m.Name))
+            .ToList();
+
+        sellableMaterialsProducts = MaterialList.AllMaterials
+            .Where(m => new[] { "Narzędzia", "Odzież" }.Contains(m.Name))
+            .ToList();
+
+        refreshTimer = new System.Timers.Timer(100);
+        refreshTimer.Elapsed += (_, _) => InvokeAsync(UpdateCountdown);
+        refreshTimer.Start();
     }
 
-    private async Task BuyWood()
+    private void UpdateCountdown()
     {
-        var material = MaterialList.AllMaterials.FirstOrDefault(m => m.Name == "Drewno");
-        if (material != null && player.Money >= material.Price)
+        var elapsed = (DateTime.Now - market.LastPriceUpdate).TotalSeconds;
+        secondsLeft = 30 - (int)(elapsed % 30);
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        refreshTimer?.Dispose();
+    }
+
+    private async Task Buy(string materialName)
+    {
+        var price = market.GetPrice(materialName);
+        if (player.Money >= price)
         {
-            player.Money -= material.Price;
-            player.Inventory.Add("Drewno", 1);
+            player.Money -= price;
+            player.Inventory.Add(materialName, 1);
+            market.AffectPrice(materialName, 1);
             await localStorage.SetItemAsync("player", player);
         }
     }
 
-    private async Task BuyIronOre()
+    private async Task Sell(string materialName)
     {
-        var material = MaterialList.AllMaterials.FirstOrDefault(m => m.Name == "Ruda żelaza");
-        if (material != null && player.Money >= material.Price)
+        var price = market.GetPrice(materialName);
+        if (player.Inventory.Remove(materialName, 1))
         {
-            player.Money -= material.Price;
-            player.Inventory.Add("Ruda żelaza", 1);
-            await localStorage.SetItemAsync("player", player);
-        }
-    }
-
-    private async Task BuyClay()
-    {
-        var material = MaterialList.AllMaterials.FirstOrDefault(m => m.Name == "Glina");
-        if (material != null && player.Money >= material.Price)
-        {
-            player.Money -= material.Price;
-            player.Inventory.Add("Glina", 1);
-            await localStorage.SetItemAsync("player", player);
-        }
-    }
-
-    private async Task BuyFlax()
-    {
-        var material = MaterialList.AllMaterials.FirstOrDefault(m => m.Name == "Len");
-        if (material != null && player.Money >= material.Price)
-        {
-            player.Money -= material.Price;
-            player.Inventory.Add("Len", 1);
-            await localStorage.SetItemAsync("player", player);
-        }
-    }
-
-    private async Task SellPlanks()
-    {
-        var material = MaterialList.AllMaterials.FirstOrDefault(m => m.Name == "Deski");
-        if (material != null && player.Inventory.Remove("Deski", 1))
-        {
-            player.Money += material.Price;
-            await localStorage.SetItemAsync("player", player);
-        }
-    }
-
-    private async Task SellIronBar()
-    {
-        var material = MaterialList.AllMaterials.FirstOrDefault(m => m.Name == "Sztabka żelaza");
-        if (material != null && player.Inventory.Remove("Sztabka żelaza", 1))
-        {
-            player.Money += material.Price;
-            await localStorage.SetItemAsync("player", player);
-        }
-    }
-
-    private async Task SellBricks()
-    {
-        var material = MaterialList.AllMaterials.FirstOrDefault(m => m.Name == "Cegła");
-        if (material != null && player.Inventory.Remove("Cegła", 1))
-        {
-            player.Money += material.Price;
-            await localStorage.SetItemAsync("player", player);
-        }
-    }
-
-    private async Task SellCloth()
-    {
-        var material = MaterialList.AllMaterials.FirstOrDefault(m => m.Name == "Płótno");
-        if (material != null && player.Inventory.Remove("Płótno", 1))
-        {
-            player.Money += material.Price;
-            await localStorage.SetItemAsync("player", player);
-        }
-    }
-
-    private async Task SellTools()
-    {
-        var material = MaterialList.AllMaterials.FirstOrDefault(m => m.Name == "Narzędzia");
-        if (material != null && player.Inventory.Remove("Narzędzia", 1))
-        {
-            player.Money += material.Price;
-            await localStorage.SetItemAsync("player", player);
-        }
-    }
-
-    private async Task SellClothing()
-    {
-        var material = MaterialList.AllMaterials.FirstOrDefault(m => m.Name == "Odzież");
-        if (material != null && player.Inventory.Remove("Odzież", 1))
-        {
-            player.Money += material.Price;
+            player.Money += price;
+            market.AffectPrice(materialName, -1);
             await localStorage.SetItemAsync("player", player);
         }
     }
