@@ -1,47 +1,67 @@
 ﻿@page "/CraftBuild"
+@inject Services.ProductionService production
+@inject ILocalStorageService localStorage
 @using Blazored.LocalStorage
 @using EcoSimGame.Models
-@inject ILocalStorageService localStorage
 
 <h3>Produkcja</h3>
 
-<div>
-    <p><strong>Drewno:</strong> @player.Inventory.GetQuantity("Drewno")</p>
-    <p><strong>Deski:</strong> @player.Inventory.GetQuantity("Deski")</p>
+<div class="crafting-container">
+    <div class="crafting-left">
+        <p><strong>Energia:</strong> @production.Energy.CurrentEnergy / @production.Energy.MaxEnergy</p>
+        <progress class="energy-bar" value="@production.Energy.CurrentEnergy" max="@production.Energy.MaxEnergy"></progress>
 
-    <p><strong>Ruda Żelaza:</strong> @player.Inventory.GetQuantity("Ruda żelaza")</p>
-    <p><strong>Sztabki Żelaza:</strong> @player.Inventory.GetQuantity("Sztabka żelaza")</p>
+        <button class="upgrade-btn" @onclick="UpgradeEnergy">
+            Ulepsz Magazyn Energii (Koszt: @production.Energy.UpgradeCost)
+        </button>
 
-    <p><strong>Glina:</strong> @player.Inventory.GetQuantity("Glina")</p>
-    <p><strong>Cegły:</strong> @player.Inventory.GetQuantity("Cegła")</p>
+        <h4>Dostępne receptury</h4>
+        <button @onclick='@(() => TryStartProduction("Deski", 10, 5, new Dictionary<string, int>{{"Drewno", 2}}, "Deski"))'>
+            2x Drewno → Deski
+        </button>
+        <button @onclick='@(() => TryStartProduction("Sztabka żelaza", 15, 8, new Dictionary<string, int>{{"Ruda żelaza", 2}}, "Sztabka żelaza"))'>
+            2x Ruda → Sztabka
+        </button>
+        <button @onclick='@(() => TryStartProduction("Cegła", 12, 6, new Dictionary<string, int>{{"Glina", 2}}, "Cegła"))'>
+            2x Glina → Cegła
+        </button>
 
-    <p><strong>Len:</strong> @player.Inventory.GetQuantity("Len")</p>
-    <p><strong>Płótno:</strong> @player.Inventory.GetQuantity("Płótno")</p>
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <p class="error">@errorMessage</p>
+        }
+    </div>
 
-    @if (CanProduceWoodenPlanks())
-    {
-        <button @onclick="ProduceWoodenPlanks">Produkuj Deski</button>
-    }
+    <div class="crafting-right">
+        <h4>Kolejka produkcyjna</h4>
 
-    @if (CanProduceIronBars())
-    {
-        <button @onclick="ProduceIronBars">Produkuj Sztabki Żelaza</button>
-    }
+        @if (production.Queue.Any())
+        {
+            @for (int i = 0; i < production.Queue.Count; i++)
+            {
+                var task = production.Queue[i];
+                var isCurrent = i == 0;
+                var percent = isCurrent ? CalculateProgress(task) : 0;
+                var secondsLeft = isCurrent ? Math.Max(0, task.DurationSeconds - (int)(DateTime.Now - task.StartTime).TotalSeconds) : 0;
+                var statusText = isCurrent ? $"W trakcie, {secondsLeft}s" : "Oczekuje";
 
-    @if (CanProduceBricks())
-    {
-        <button @onclick="ProduceBricks">Produkuj Cegły</button>
-    }
-
-    @if (CanProduceCloth())
-    {
-        <button @onclick="ProduceCloth">Produkuj Płótno</button>
-    }
-
+                <div class="queue-item">
+                    <p><strong>@task.ProductName</strong> (@statusText)</p>
+                    <progress class="production-bar" value="@((int)percent)" max="100"></progress>
+                </div>
+            }
+        }
+        else
+        {
+            <p>Brak aktywnej produkcji.</p>
+        }
+    </div>
 </div>
 
 @code {
-    private Player player = new Player();
+    private Player player = new();
+    private string? errorMessage;
+    private System.Threading.Timer? _refreshTimer;
 
     protected override async Task OnInitializedAsync()
     {
@@ -49,64 +69,52 @@
         if (storedPlayer != null)
         {
             player = storedPlayer;
+            production.PlayerRef = player;
+            production.LocalStorageRef = localStorage;
         }
 
-        await localStorage.SetItemAsync("player", player);
+        production.OnUpdate += StateHasChanged;
+        _refreshTimer = new System.Threading.Timer(_ => InvokeAsync(StateHasChanged), null, 0, 200);
     }
 
-    private bool CanProduceWoodenPlanks()
+    private double CalculateProgress(ProductionTask task)
     {
-        return player.Inventory.GetQuantity("Drewno") >= 2;
+        if (task.StartTime == default || task.DurationSeconds <= 0)
+            return 0;
+
+        var elapsed = (DateTime.Now - task.StartTime).TotalSeconds;
+        var percent = (elapsed / task.DurationSeconds) * 100.0;
+        return Math.Min(100, percent);
     }
 
-    private bool CanProduceIronBars()
+    private void UpgradeEnergy()
     {
-        return player.Inventory.GetQuantity("Ruda żelaza") >= 2;
+        production.UpgradeEnergyStorage();
     }
 
-    private bool CanProduceBricks()
+    private void TryStartProduction(string name, int duration, int energy, Dictionary<string, int> ingredients, string output)
     {
-        return player.Inventory.GetQuantity("Glina") >= 2;
-    }
+        errorMessage = null;
 
-    private bool CanProduceCloth()
-    {
-        return player.Inventory.GetQuantity("Len") >= 2;
-    }
+        var task = new ProductionTask
+            {
+                ProductName = name,
+                DurationSeconds = duration,
+                TimeRemaining = duration,
+                EnergyCost = energy,
+                Ingredients = ingredients,
+                OutputMaterial = output
+            };
 
-    private async Task ProduceWoodenPlanks()
-    {
-        if (player.Inventory.Remove("Drewno", 2))
+        if (!production.AddToQueue(task))
         {
-            player.Inventory.Add("Deski", 1);
-            await localStorage.SetItemAsync("player", player);
+            errorMessage = "Brak energii lub surowców!";
         }
     }
 
-    private async Task ProduceIronBars()
+    public void Dispose()
     {
-        if (player.Inventory.Remove("Ruda żelaza", 2)) 
-        {
-            player.Inventory.Add("Sztabka żelaza", 1);
-            await localStorage.SetItemAsync("player", player);
-        }
-    }
-
-    private async Task ProduceBricks()
-    {
-        if (player.Inventory.Remove("Glina", 2))
-        {
-            player.Inventory.Add("Cegła", 1);
-            await localStorage.SetItemAsync("player", player);
-        }
-    }
-
-    private async Task ProduceCloth()
-    {
-        if (player.Inventory.Remove("Len", 2))
-        {
-            player.Inventory.Add("Płótno", 1);
-            await localStorage.SetItemAsync("player", player);
-        }
+        production.OnUpdate -= StateHasChanged;
+        _refreshTimer?.Dispose();
     }
 }

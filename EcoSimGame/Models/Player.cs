@@ -11,6 +11,8 @@ public class Player
     public int WarehouseCapacity { get; set; } = 100;
     public int WarehouseUpgradeCost { get; set; } = 200;
 
+    public EnergyStorage EnergyStorage { get; set; } = new();
+
     public DateTime? LastProcessingTime { get; set; }
     public List<string> OwnedSchematics { get; set; }
 

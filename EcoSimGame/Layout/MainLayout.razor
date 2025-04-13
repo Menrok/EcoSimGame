@@ -1,7 +1,8 @@
 ﻿@inherits LayoutComponentBase
 @inject ILocalStorageService localStorage
+@inject Services.ProductionService production
 @using Blazored.LocalStorage
-@using EcoSimGame.Models;
+@using EcoSimGame.Models
 
 <div class="page">
     <div class="sidebar">
@@ -13,7 +14,8 @@
             <div class="user-info">
                 <span><strong>@player.Name</strong></span> |
                 <span>Pieniądze: <strong>@player.Money</strong></span> |
-                <span>Pojemność magazynu: <strong>@player.GetCurrentInventorySize() / @player.WarehouseCapacity</strong></span>
+                <span>Pojemność magazynu: <strong>@player.GetCurrentInventorySize() / @player.WarehouseCapacity</strong></span> |
+                <span>Energia: <strong>@production.Energy.CurrentEnergy / @production.Energy.MaxEnergy</strong></span>
             </div>
         </div>
 
@@ -33,18 +35,28 @@
         if (storedPlayer != null)
             player = storedPlayer;
 
-        _timer = new System.Threading.Timer(async _ => await UpdateMoney(), null, 0, 100);
+        production.PlayerRef = player;
+        production.LocalStorageRef = localStorage;
+        production.OnUpdate += StateHasChanged;
+
+        _timer = new System.Threading.Timer(async _ => await UpdatePlayerState(), null, 0, 1000);
     }
 
-    private async Task UpdateMoney()
+    private async Task UpdatePlayerState()
     {
         var storedPlayer = await localStorage.GetItemAsync<Player>("player");
         if (storedPlayer != null)
         {
             player.Money = storedPlayer.Money;
+            player.WarehouseCapacity = storedPlayer.WarehouseCapacity;
+            player.Inventory = storedPlayer.Inventory;
             InvokeAsync(StateHasChanged);
         }
     }
 
-    public void Dispose() =>  _timer?.Dispose();
+    public void Dispose()
+    {
+        _timer?.Dispose();
+        production.OnUpdate -= StateHasChanged;
+    }
 }
