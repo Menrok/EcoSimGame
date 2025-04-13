@@ -10,6 +10,11 @@
 
 <p><em>Ceny zmienią się za: @secondsLeft s</em></p>
 
+@if (!string.IsNullOrEmpty(message))
+{
+    <p style="color: red;"><em>@message</em></p>
+}
+
 @if (buyableMaterials != null && sellableMaterialsProcessed != null && sellableMaterialsProducts != null)
 {
     <div class="shop-container">
@@ -59,6 +64,8 @@ else
     private System.Timers.Timer refreshTimer;
     private int secondsLeft = 30;
 
+    private string? message;
+
     protected override async Task OnInitializedAsync()
     {
         var storedPlayer = await localStorage.GetItemAsync<Player>("player");
@@ -79,7 +86,7 @@ else
             .Where(m => new[] { "Narzędzia", "Odzież" }.Contains(m.Name))
             .ToList();
 
-        refreshTimer = new System.Timers.Timer(100);
+        refreshTimer = new System.Timers.Timer(1000);
         refreshTimer.Elapsed += (_, _) => InvokeAsync(UpdateCountdown);
         refreshTimer.Start();
     }
@@ -99,12 +106,20 @@ else
     private async Task Buy(string materialName)
     {
         var price = market.GetPrice(materialName);
+
         if (player.Money >= price)
         {
-            player.Money -= price;
-            player.Inventory.Add(materialName, 1);
-            market.AffectPrice(materialName, 1);
-            await localStorage.SetItemAsync("player", player);
+            if (player.TryAddToInventory(materialName, 1))
+            {
+                player.Money -= price;
+                market.AffectPrice(materialName, 1);
+                message = null;
+                await localStorage.SetItemAsync("player", player);
+            }
+            else
+            {
+                message = "Brak miejsca w magazynie!";
+            }
         }
     }
 
@@ -115,6 +130,7 @@ else
         {
             player.Money += price;
             market.AffectPrice(materialName, -1);
+            message = null;
             await localStorage.SetItemAsync("player", player);
         }
     }
