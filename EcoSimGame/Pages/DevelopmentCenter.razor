@@ -1,0 +1,131 @@
+﻿@page "/DevelopmentCenter"
+@using Blazored.LocalStorage
+@using EcoSimGame.Models
+@inject Services.GameStateService game
+@implements IDisposable
+
+<h3>Centrum Rozwoju</h3>
+
+<div class="tabs-wrapper">
+    <div class="tabs">
+        <button @onclick='() => SetActiveTab("tree")' class="@(activeTab == "tree" ? "active" : null)">Drzewko Produkcji</button>
+        <button @onclick='() => SetActiveTab("infrastructure")' class="@(activeTab == "infrastructure" ? "active" : null)">Rozbudowa Infrastruktury</button>
+        <button @onclick='() => SetActiveTab("research")' class="@(activeTab == "research" ? "active" : null)">Badania</button>
+    </div>
+</div>
+
+<div class="tab-content">
+    @if (activeTab == "tree")
+    {
+        <h4>Drzewko Produkcji</h4>
+        <p>Poziom gracza: <strong>@game.Player.Level</strong></p>
+        <p>Doświadczenie: <strong>@game.Player.Experience / @game.Player.GetExperienceForNextLevel(game.Player.Level + 1)</strong></p>
+        <p>Saldo: <strong>@game.Player.Money</strong></p>
+
+        <ul>
+            @foreach (var node in productionTree.Nodes)
+            {
+                <li>
+                    <div class="node-entry">
+                        <strong>@node.Name</strong><br />
+                        Wymagany poziom: @node.RequiredLevel | Cena: @node.CostMoney
+
+                        @if (game.Player.HasSchematic(node.Name))
+                        {
+                            <span class="owned"> (Schemat posiadasz)</span>
+                        }
+                        else if (game.Player.Level >= node.RequiredLevel)
+                        {
+                            <button @onclick="() => TryBuySchematic(node)">Kup schemat</button>
+                        }
+                        else
+                        {
+                            <span class="locked"> (Osiągnij poziom @node.RequiredLevel)</span>
+                        }
+                    </div>
+                </li>
+            }
+        </ul>
+    }
+    else if (activeTab == "infrastructure")
+    {
+        <h4>Rozbudowa Infrastruktury</h4>
+        <p><strong>Magazyn Towarów:</strong> @game.Player.GetCurrentInventorySize() / @game.Player.WarehouseCapacity</p>
+        <button @onclick="UpgradeWarehouse">Ulepsz magazyn (Koszt: @game.Player.WarehouseUpgradeCost)</button>
+
+        <p><strong>Magazyn Energii:</strong> @game.Energy.CurrentEnergy / @game.Energy.MaxEnergy</p>
+        <button @onclick="UpgradeEnergy">Ulepsz magazyn energii (Koszt: @game.Energy.UpgradeCost)</button>
+    }
+    else if (activeTab == "research")
+    {
+        <h4>Badania</h4>
+        <p>Ta sekcja będzie dostępna w przyszłości.</p>
+    }
+</div>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <p class="error"><strong>@errorMessage</strong></p>
+}
+
+@code {
+    private ProductionTree productionTree = new();
+    private string activeTab = "tree";
+    private string? errorMessage;
+
+    protected override void OnInitialized()
+    {
+        productionTree = new ProductionTree();
+        game.OnUpdate += StateHasChanged;
+    }
+
+    private void SetActiveTab(string tab)
+    {
+        activeTab = tab;
+        errorMessage = null;
+    }
+
+    private async Task TryBuySchematic(ProductionNode node)
+    {
+        errorMessage = null;
+
+        if (game.Player.TryBuySchematic(node.Name, node.RequiredLevel, node.CostMoney))
+        {
+            await game.Save();
+        }
+        else
+        {
+            errorMessage = "Nie spełniasz warunków zakupu schematu!";
+        }
+    }
+
+    private async Task UpgradeWarehouse()
+    {
+        if (game.Player.UpgradeWarehouse())
+        {
+            await game.Save();
+        }
+        else
+        {
+            errorMessage = "Za mało środków na ulepszenie magazynu.";
+        }
+    }
+
+    private async Task UpgradeEnergy()
+    {
+        if (game.Energy.TryUpgrade(game.Player.Money, out var newMoney))
+        {
+            game.Player.Money = newMoney;
+            await game.Save();
+        }
+        else
+        {
+            errorMessage = "Za mało środków na ulepszenie energii.";
+        }
+    }
+
+    public void Dispose()
+    {
+        game.OnUpdate -= StateHasChanged;
+    }
+}

@@ -1,25 +1,35 @@
 ﻿.shop-container {
     display: flex;
-    justify-content: space-between;
     gap: 2rem;
+    margin-top: 1rem;
 }
 
-.shop-left,
-.shop-right {
-    width: 48%;
+.shop-left, .shop-right {
+    flex: 1;
 }
 
-    .shop-left h4,
-    .shop-right h4 {
-        margin-bottom: 1rem;
+button {
+    display: inline-block;
+    margin: 0.2rem 0;
+    padding: 0.4rem 1rem;
+    background-color: #2196F3;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+    button:hover {
+        background-color: #0b7dda;
     }
 
-    .shop-left button,
-    .shop-right button {
-        margin-top: 0.5rem;
-    }
+h4, h5 {
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
 
-    .shop-left p,
-    .shop-right p {
-        margin-bottom: 0.5rem;
-    }
+p {
+    margin: 0.3rem 0;
+}

@@ -3,17 +3,19 @@
 public class ProductionNode
 {
     public string Name { get; set; }
-    public int RequiredExperience { get; set; }
+    public int RequiredLevel { get; set; }
     public string? RequiredSchematic { get; set; }
     public bool IsUnlocked { get; set; }
     public decimal CostMoney { get; set; }
 
-    public ProductionNode(string name, int requiredExperience, string? requiredSchematic, decimal costMoney)
+    public ProductionNode(string name, int requiredLevel, string? requiredSchematic, decimal costMoney)
     {
         Name = name;
-        RequiredExperience = requiredExperience;
+        RequiredLevel = requiredLevel;
         RequiredSchematic = requiredSchematic;
         IsUnlocked = false;
         CostMoney = costMoney;
     }
+
+    public ProductionNode() { }
 }

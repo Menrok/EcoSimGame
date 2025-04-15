@@ -3,7 +3,7 @@
 @using EcoSimGame.Models
 @using EcoSimGame.Models.List
 @using EcoSimGame.Services
-@inject ILocalStorageService localStorage
+@inject Services.GameStateService game
 @inject MarketService market
 
 <h3>Sklep</h3>
@@ -24,7 +24,7 @@
             {
                 var price = market.GetPrice(material.Name);
                 <p><strong>@material.Name</strong> – Cena: @price</p>
-                <button @onclick="() => Buy(material.Name)" disabled="@(player.Money < price)">Kup</button>
+                <button @onclick="() => Buy(material.Name)" disabled="@(game.Player.Money < price)">Kup</button>
             }
         </div>
 
@@ -34,7 +34,7 @@
             <h5>Materiały przetworzone</h5>
             @foreach (var material in sellableMaterialsProcessed)
             {
-                var quantity = player.Inventory.GetQuantity(material.Name);
+                var quantity = game.Player.Inventory.GetQuantity(material.Name);
                 var price = market.GetPrice(material.Name);
                 <p><strong>@material.Name</strong> – Cena: @price (Masz: @quantity)</p>
                 <button @onclick="() => Sell(material.Name)" disabled="@(quantity == 0)">Sprzedaj</button>
@@ -43,7 +43,7 @@
             <h5>Produkty</h5>
             @foreach (var material in sellableMaterialsProducts)
             {
-                var quantity = player.Inventory.GetQuantity(material.Name);
+                var quantity = game.Player.Inventory.GetQuantity(material.Name);
                 var price = market.GetPrice(material.Name);
                 <p><strong>@material.Name</strong> – Cena: @price (Masz: @quantity)</p>
                 <button @onclick="() => Sell(material.Name)" disabled="@(quantity == 0)">Sprzedaj</button>
@@ -57,7 +57,6 @@ else
 }
 
 @code {
-    private Player player = new();
     private List<Material> buyableMaterials = new();
     private List<Material> sellableMaterialsProcessed = new();
     private List<Material> sellableMaterialsProducts = new();
@@ -66,13 +65,9 @@ else
 
     private string? message;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        var storedPlayer = await localStorage.GetItemAsync<Player>("player");
-        if (storedPlayer != null)
-        {
-            player = storedPlayer;
-        }
+        game.OnUpdate += StateHasChanged;
 
         buyableMaterials = MaterialList.AllMaterials
             .Where(m => new[] { "Drewno", "Ruda żelaza", "Glina", "Len" }.Contains(m.Name))
@@ -101,20 +96,21 @@ else
     public void Dispose()
     {
         refreshTimer?.Dispose();
+        game.OnUpdate -= StateHasChanged;
     }
 
     private async Task Buy(string materialName)
     {
         var price = market.GetPrice(materialName);
 
-        if (player.Money >= price)
+        if (game.Player.Money >= price)
         {
-            if (player.TryAddToInventory(materialName, 1))
+            if (game.Player.TryAddToInventory(materialName, 1))
             {
-                player.Money -= price;
+                game.Player.Money -= price;
                 market.AffectPrice(materialName, 1);
                 message = null;
-                await localStorage.SetItemAsync("player", player);
+                await game.Save();
             }
             else
             {
@@ -126,12 +122,12 @@ else
     private async Task Sell(string materialName)
     {
         var price = market.GetPrice(materialName);
-        if (player.Inventory.Remove(materialName, 1))
+        if (game.Player.Inventory.Remove(materialName, 1))
         {
-            player.Money += price;
+            game.Player.Money += price;
             market.AffectPrice(materialName, -1);
             message = null;
-            await localStorage.SetItemAsync("player", player);
+            await game.Save();
         }
     }
 }

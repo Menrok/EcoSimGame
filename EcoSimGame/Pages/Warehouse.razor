@@ -1,59 +1,35 @@
 ﻿@page "/Warehouse"
-@using Blazored.LocalStorage
 @using EcoSimGame.Models
-@inject ILocalStorageService localStorage
+@inject Services.GameStateService game
 
 <h3>Magazyn</h3>
 
-@if (player != null)
+<p><strong>Pojemność magazynu:</strong> @game.Player.GetCurrentInventorySize() / @game.Player.WarehouseCapacity</p>
+
+<progress class="inventory-bar" max="@game.Player.WarehouseCapacity" value="@game.Player.GetCurrentInventorySize()"></progress>
+
+@if (game.Player.Inventory.GetAllWithQuantity().Count > 0)
 {
-    <p><strong>Pojemność magazynu:</strong> @player.GetCurrentInventorySize() / @player.WarehouseCapacity</p>
-
-    <progress max="@player.WarehouseCapacity" value="@player.GetCurrentInventorySize()" style="width: 100%; height: 20px;"></progress>
-
-    @if (player.Inventory.GetAllWithQuantity().Count > 0)
-    {
-        <div style="margin-top: 1em;">
-            @foreach (var stock in player.Inventory.GetAllWithQuantity())
-            {
-                <p><strong>@stock.MaterialName:</strong> @stock.Quantity sztuk</p>
-            }
-        </div>
-    }
-    else
-    {
-        <p>Magazyn jest pusty.</p>
-    }
-
-    <div style="margin-top: 2em;">
-        <p><strong>Koszt ulepszenia:</strong> @player.WarehouseUpgradeCost</p>
-        <button @onclick="UpgradeWarehouse" disabled="@(player.Money < player.WarehouseUpgradeCost)">
-            Ulepsz magazyn
-        </button>
+    <div style="margin-top: 1em;">
+        @foreach (var stock in game.Player.Inventory.GetAllWithQuantity())
+        {
+            <p class="material-entry"><strong>@stock.MaterialName:</strong> @stock.Quantity sztuk</p>
+        }
     </div>
 }
 else
 {
-    <p>Ładowanie danych...</p>
+    <p>Magazyn jest pusty.</p>
 }
 
 @code {
-    private Player player = new Player();
-
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        var storedPlayer = await localStorage.GetItemAsync<Player>("player");
-        if (storedPlayer != null)
-        {
-            player = storedPlayer;
-        }
+        game.OnUpdate += StateHasChanged;
     }
 
-    private async Task UpgradeWarehouse()
+    public void Dispose()
     {
-        if (player.UpgradeWarehouse())
-        {
-            await localStorage.SetItemAsync("player", player);
-        }
+        game.OnUpdate -= StateHasChanged;
     }
 }

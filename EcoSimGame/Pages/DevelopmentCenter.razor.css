@@ -1,0 +1,57 @@
+﻿.tabs-wrapper {
+    width: 100%;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid #ccc;
+}
+
+.tabs {
+    display: flex;
+    gap: 1rem;
+    padding: 0.5rem 0;
+}
+
+    .tabs button {
+        padding: 0.5rem 1.2rem;
+        background-color: #e0e0e0;
+        border: none;
+        border-radius: 6px 6px 0 0;
+        cursor: pointer;
+        font-weight: bold;
+        transition: background-color 0.3s ease;
+    }
+
+        .tabs button.active {
+            background-color: #ffffff;
+            border-bottom: 2px solid #ffffff;
+        }
+
+.tab-content {
+    padding: 1rem;
+    background-color: #ffffff;
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 0 4px rgba(0,0,0,0.1);
+}
+
+    .tab-content button {
+        width: 100%;
+        text-align: left;
+        margin-top: 0.3rem;
+    }
+
+
+.node-entry {
+    margin-bottom: 12px;
+}
+
+.owned {
+    color: green;
+}
+
+.locked {
+    color: gray;
+}
+
+.error {
+    color: red;
+    font-weight: bold;
+}

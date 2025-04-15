@@ -1,6 +1,7 @@
 ﻿@inherits LayoutComponentBase
 @inject ILocalStorageService localStorage
 @inject Services.ProductionService production
+@inject Services.GameStateService game
 @using Blazored.LocalStorage
 @using EcoSimGame.Models
 
@@ -12,10 +13,12 @@
     <main>
         <div class="top-row px-4">
             <div class="user-info">
-                <span><strong>@player.Name</strong></span> |
-                <span>Pieniądze: <strong>@player.Money</strong></span> |
-                <span>Pojemność magazynu: <strong>@player.GetCurrentInventorySize() / @player.WarehouseCapacity</strong></span> |
-                <span>Energia: <strong>@production.Energy.CurrentEnergy / @production.Energy.MaxEnergy</strong></span>
+                <span><strong>@game.Player.Name</strong></span> |
+                <span>Pieniądze: <strong>@game.Player.Money</strong></span> |
+                <span>Pojemność magazynu: <strong>@game.Player.GetCurrentInventorySize() / @game.Player.WarehouseCapacity</strong></span> |
+                <span>Energia: <strong>@game.Energy.CurrentEnergy / @game.Energy.MaxEnergy</strong></span> |
+                <span>Poziom: <strong>@game.Player.Level</strong></span> |
+                <span>EXP: <strong>@game.Player.Experience / @game.Player.GetExperienceForNextLevel(game.Player.Level + 1)</strong></span>
             </div>
         </div>
 
@@ -26,37 +29,14 @@
 </div>
 
 @code {
-    private Player player = new Player();
-    private System.Threading.Timer _timer;
-
     protected override async Task OnInitializedAsync()
     {
-        var storedPlayer = await localStorage.GetItemAsync<Player>("player");
-        if (storedPlayer != null)
-            player = storedPlayer;
-
-        production.PlayerRef = player;
-        production.LocalStorageRef = localStorage;
-        production.OnUpdate += StateHasChanged;
-
-        _timer = new System.Threading.Timer(async _ => await UpdatePlayerState(), null, 0, 1000);
-    }
-
-    private async Task UpdatePlayerState()
-    {
-        var storedPlayer = await localStorage.GetItemAsync<Player>("player");
-        if (storedPlayer != null)
-        {
-            player.Money = storedPlayer.Money;
-            player.WarehouseCapacity = storedPlayer.WarehouseCapacity;
-            player.Inventory = storedPlayer.Inventory;
-            InvokeAsync(StateHasChanged);
-        }
+        await game.Load();
+        game.OnUpdate += StateHasChanged;
     }
 
     public void Dispose()
     {
-        _timer?.Dispose();
-        production.OnUpdate -= StateHasChanged;
+        game.OnUpdate -= StateHasChanged;
     }
 }

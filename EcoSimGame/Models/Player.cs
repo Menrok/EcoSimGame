@@ -29,21 +29,40 @@ public class Player
     public void AddExperience(int amount)
     {
         Experience += amount;
-        if (Experience >= 100)
+
+        while (Experience >= GetExperienceForNextLevel(Level + 1))
         {
-            Experience -= 100;
             Level++;
         }
     }
 
-    public bool BuySchematioc(string schematicName)
+    public int GetExperienceForNextLevel(int level)
     {
-        if(!OwnedSchematics.Contains(schematicName))
+        return level switch
         {
+            2 => 1000,
+            3 => 5000,
+            4 => 15000,
+            5 => 25000,
+            _ => int.MaxValue
+        };
+    }
+
+    public bool TryBuySchematic(string schematicName, int requiredLevel, decimal cost)
+    {
+        if (Level >= requiredLevel && Money >= cost && !OwnedSchematics.Contains(schematicName))
+        {
+            Money -= cost;
             OwnedSchematics.Add(schematicName);
             return true;
         }
+
         return false;
+    }
+
+    public bool CanBuySchematic(string schematicName, int requiredLevel, decimal cost)
+    {
+        return Level >= requiredLevel && Money >= cost && !OwnedSchematics.Contains(schematicName);
     }
 
     public bool HasSchematic(string schematicName) => OwnedSchematics.Contains(schematicName);

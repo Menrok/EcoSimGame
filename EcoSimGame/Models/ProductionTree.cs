@@ -8,8 +8,8 @@ public class ProductionTree
     {
         Nodes = new List<ProductionNode>
         {
-            new ProductionNode("Narzędzia", 100, "Produkcja narzędzi", 1000),
-            new ProductionNode("Odzież", 100, "Produkcja Odzieży", 1000),
+            new ProductionNode("Narzędzia", 2, null, 1000),
+            new ProductionNode("Odzież", 2, null, 1000)        
         };
     }
 }

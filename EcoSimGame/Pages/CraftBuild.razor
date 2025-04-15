@@ -1,20 +1,11 @@
 ﻿@page "/CraftBuild"
-@inject Services.ProductionService production
-@inject ILocalStorageService localStorage
-@using Blazored.LocalStorage
+@inject Services.GameStateService game
 @using EcoSimGame.Models
 
 <h3>Produkcja</h3>
 
 <div class="crafting-container">
     <div class="crafting-left">
-        <p><strong>Energia:</strong> @production.Energy.CurrentEnergy / @production.Energy.MaxEnergy</p>
-        <progress class="energy-bar" value="@production.Energy.CurrentEnergy" max="@production.Energy.MaxEnergy"></progress>
-
-        <button class="upgrade-btn" @onclick="UpgradeEnergy">
-            Ulepsz Magazyn Energii (Koszt: @production.Energy.UpgradeCost)
-        </button>
-
         <h4>Dostępne receptury</h4>
         <button @onclick='@(() => TryStartProduction("Deski", 10, 5, new Dictionary<string, int>{{"Drewno", 2}}, "Deski"))'>
             2x Drewno → Deski
@@ -25,6 +16,27 @@
         <button @onclick='@(() => TryStartProduction("Cegła", 12, 6, new Dictionary<string, int>{{"Glina", 2}}, "Cegła"))'>
             2x Glina → Cegła
         </button>
+        <button @onclick='@(() => TryStartProduction("Płótno", 10, 4, new Dictionary<string, int>{{"Len", 2}}, "Płótno"))'>
+            2x Len → Płótno
+        </button>
+
+        @if (game.Player.HasSchematic("Narzędzia") || game.Player.HasSchematic("Odzież"))
+        {
+            <h4>Zaawansowane receptury</h4>
+
+            @if (game.Player.HasSchematic("Narzędzia"))
+            {
+                <button @onclick='@(() => TryStartProduction("Narzędzia", 20, 10, new Dictionary<string, int>{{"Deski", 1}, {"Sztabka żelaza", 1}}, "Narzędzia"))'>
+                    1x Deski + 1x Sztabka → Narzędzia
+                </button>
+            }
+            @if (game.Player.HasSchematic("Odzież"))
+            {
+                <button @onclick='@(() => TryStartProduction("Odzież", 25, 12, new Dictionary<string, int>{{"Płótno", 2}}, "Odzież"))'>
+                    2x Płótno → Odzież
+                </button>
+            }
+        }
 
         @if (!string.IsNullOrEmpty(errorMessage))
         {
@@ -35,11 +47,11 @@
     <div class="crafting-right">
         <h4>Kolejka produkcyjna</h4>
 
-        @if (production.Queue.Any())
+        @if (game.ProductionQueue.Any())
         {
-            @for (int i = 0; i < production.Queue.Count; i++)
+            @for (int i = 0; i < game.ProductionQueue.Count; i++)
             {
-                var task = production.Queue[i];
+                var task = game.ProductionQueue[i];
                 var isCurrent = i == 0;
                 var percent = isCurrent ? CalculateProgress(task) : 0;
                 var secondsLeft = isCurrent ? Math.Max(0, task.DurationSeconds - (int)(DateTime.Now - task.StartTime).TotalSeconds) : 0;
@@ -59,22 +71,11 @@
 </div>
 
 @code {
-    private Player player = new();
     private string? errorMessage;
-    private System.Threading.Timer? _refreshTimer;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        var storedPlayer = await localStorage.GetItemAsync<Player>("player");
-        if (storedPlayer != null)
-        {
-            player = storedPlayer;
-            production.PlayerRef = player;
-            production.LocalStorageRef = localStorage;
-        }
-
-        production.OnUpdate += StateHasChanged;
-        _refreshTimer = new System.Threading.Timer(_ => InvokeAsync(StateHasChanged), null, 0, 200);
+        game.OnUpdate += StateHasChanged;
     }
 
     private double CalculateProgress(ProductionTask task)
@@ -83,13 +84,7 @@
             return 0;
 
         var elapsed = (DateTime.Now - task.StartTime).TotalSeconds;
-        var percent = (elapsed / task.DurationSeconds) * 100.0;
-        return Math.Min(100, percent);
-    }
-
-    private void UpgradeEnergy()
-    {
-        production.UpgradeEnergyStorage();
+        return Math.Min(100, (elapsed / task.DurationSeconds) * 100.0);
     }
 
     private void TryStartProduction(string name, int duration, int energy, Dictionary<string, int> ingredients, string output)
@@ -106,7 +101,7 @@
                 OutputMaterial = output
             };
 
-        if (!production.AddToQueue(task))
+        if (!game.TryStartProduction(task))
         {
             errorMessage = "Brak energii lub surowców!";
         }
@@ -114,7 +109,6 @@
 
     public void Dispose()
     {
-        production.OnUpdate -= StateHasChanged;
-        _refreshTimer?.Dispose();
+        game.OnUpdate -= StateHasChanged;
     }
 }
