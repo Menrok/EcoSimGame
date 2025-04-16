@@ -10,12 +10,22 @@
 
 @if (game.Player.Inventory.GetAllWithQuantity().Count > 0)
 {
-    <div style="margin-top: 1em;">
+    <div class="warehouse-container">
         @foreach (var stock in game.Player.Inventory.GetAllWithQuantity())
         {
-            <p class="material-entry"><strong>@stock.MaterialName:</strong> @stock.Quantity sztuk</p>
+            var imageName = stock.MaterialName.ToLower()
+            .Replace(" ", "")
+            .Replace("ż", "z").Replace("ó", "o").Replace("ł", "l")
+            .Replace("ć", "c").Replace("ś", "s").Replace("ą", "a")
+            .Replace("ę", "e").Replace("ź", "z").Replace("ń", "n");
+
+            <div class="material-row">
+                <img src="images/materials/@(imageName).png" alt="@stock.MaterialName" class="material-icon" />
+                <span><strong>@stock.MaterialName:</strong> @stock.Quantity sztuk</span>
+            </div>
         }
     </div>
+
 }
 else
 {

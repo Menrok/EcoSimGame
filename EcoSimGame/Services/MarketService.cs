@@ -28,20 +28,20 @@ public class MarketService : IDisposable
         return prices.TryGetValue(materialName, out var price) ? Math.Round(price, 2) : 0;
     }
 
-    public void AffectPrice(string materialName, decimal delta)
+    public void AffectPrice(string materialName, int direction)
     {
-        if (prices.ContainsKey(materialName))
-        {
-            prices[materialName] = Math.Max(1, prices[materialName] + delta);
-        }
+        if (!prices.ContainsKey(materialName)) return;
+
+        decimal delta = 0.05m * direction;
+        prices[materialName] = Math.Max(1m, Math.Round(prices[materialName] + delta, 2));
     }
 
     private void UpdatePrices()
     {
         foreach (var key in prices.Keys.ToList())
         {
-            var change = (decimal)(random.NextDouble() * 4 - 2);
-            prices[key] = Math.Max(1, prices[key] + change);
+            var change = (decimal)(random.NextDouble() - 0.5);
+            prices[key] = Math.Max(1m, Math.Round(prices[key] + change, 2));
         }
 
         LastPriceUpdate = DateTime.Now;
