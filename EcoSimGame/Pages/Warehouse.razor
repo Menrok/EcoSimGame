@@ -10,22 +10,52 @@
 
 @if (game.Player.Inventory.GetAllWithQuantity().Count > 0)
 {
-    <div class="warehouse-container">
-        @foreach (var stock in game.Player.Inventory.GetAllWithQuantity())
-        {
-            var imageName = stock.MaterialName.ToLower()
-            .Replace(" ", "")
-            .Replace("ż", "z").Replace("ó", "o").Replace("ł", "l")
-            .Replace("ć", "c").Replace("ś", "s").Replace("ą", "a")
-            .Replace("ę", "e").Replace("ź", "z").Replace("ń", "n");
+    <div class="warehouse-columns">
+        <div class="warehouse-column">
+            <h4>Materiały</h4>
+            @foreach (var name in new[] { "Drewno", "Ruda żelaza", "Glina", "Len" })
+            {
+                var quantity = game.Player.Inventory.GetQuantity(name);
+                if (quantity > 0)
+                {
+                    <div class="material-row">
+                        <img src=@($"images/materials/{GetImageName(name)}.png") alt="@name" class="material-icon" />
+                        <span><strong>@name:</strong> @quantity sztuk</span>
+                    </div>
+                }
+            }
+        </div>
 
-            <div class="material-row">
-                <img src="images/materials/@(imageName).png" alt="@stock.MaterialName" class="material-icon" />
-                <span><strong>@stock.MaterialName:</strong> @stock.Quantity sztuk</span>
-            </div>
-        }
+        <div class="warehouse-column">
+            <h4>Surowce przetworzone</h4>
+            @foreach (var name in new[] { "Deski", "Sztabka żelaza", "Cegła", "Płótno" })
+            {
+                var quantity = game.Player.Inventory.GetQuantity(name);
+                if (quantity > 0)
+                {
+                    <div class="material-row">
+                        <img src=@($"images/materials/{GetImageName(name)}.png") alt="@name" class="material-icon" />
+                        <span><strong>@name:</strong> @quantity sztuk</span>
+                    </div>
+                }
+            }
+        </div>
+
+        <div class="warehouse-column">
+            <h4>Produkty</h4>
+            @foreach (var name in new[] { "Narzędzia", "Odzież" })
+            {
+                var quantity = game.Player.Inventory.GetQuantity(name);
+                if (quantity > 0)
+                {
+                    <div class="material-row">
+                        <img src=@($"images/materials/{GetImageName(name)}.png") alt="@name" class="material-icon" />
+                        <span><strong>@name:</strong> @quantity sztuk</span>
+                    </div>
+                }
+            }
+        </div>
     </div>
-
 }
 else
 {
@@ -42,4 +72,11 @@ else
     {
         game.OnUpdate -= StateHasChanged;
     }
+
+    private string GetImageName(string name) =>
+        name.ToLower()
+            .Replace(" ", "")
+            .Replace("ż", "z").Replace("ó", "o").Replace("ł", "l")
+            .Replace("ć", "c").Replace("ś", "s").Replace("ą", "a")
+            .Replace("ę", "e").Replace("ź", "z").Replace("ń", "n");
 }

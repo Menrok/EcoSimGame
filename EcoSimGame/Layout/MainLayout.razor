@@ -3,6 +3,7 @@
 @inject ILocalStorageService localStorage
 @inject Services.ProductionService production
 @inject Services.GameStateService game
+@inject Services.MarketService market
 @using Blazored.LocalStorage
 @using EcoSimGame.Models
 
@@ -32,6 +33,7 @@
 @code {
     protected override async Task OnInitializedAsync()
     {
+        await market.InitializeAsync();
         await game.Load();
         game.OnUpdate += StateHasChanged;
     }

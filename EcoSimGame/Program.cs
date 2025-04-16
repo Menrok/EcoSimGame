@@ -10,7 +10,7 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddScoped<Player>();
 builder.Services.AddScoped<GameStateService>();
-builder.Services.AddSingleton<MarketService>();
+builder.Services.AddScoped<MarketService>();
 builder.Services.AddSingleton<ProductionService>();
 
 builder.RootComponents.Add<App>("#app");

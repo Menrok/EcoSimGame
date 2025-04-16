@@ -14,6 +14,17 @@
     margin-bottom: 1rem;
 }
 
+.warehouse-columns {
+    display: flex;
+    gap: 2rem;
+    margin-top: 1rem;
+}
+
+.warehouse-column {
+    flex: 1;
+}
+
+
 .material-entry {
     font-weight: bold;
     margin: 0.3rem 0;

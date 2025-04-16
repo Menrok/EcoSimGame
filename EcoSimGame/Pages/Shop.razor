@@ -1,5 +1,4 @@
 ﻿@page "/Shop"
-@using Blazored.LocalStorage
 @using EcoSimGame.Models
 @using EcoSimGame.Models.List
 @using EcoSimGame.Services
@@ -12,10 +11,10 @@
 
 @if (!string.IsNullOrEmpty(message))
 {
-    <p style="color: red;"><em>@message</em></p>
+    <p class="error"><em>@message</em></p>
 }
 
-@if (buyableMaterials != null && sellableMaterialsProcessed != null && sellableMaterialsProducts != null)
+@if (buyableMaterials.Any())
 {
     <div class="shop-container">
         <div class="shop-left">
@@ -23,31 +22,58 @@
             @foreach (var material in buyableMaterials)
             {
                 var price = market.GetPrice(material.Name);
-                <p><strong>@material.Name</strong> – Cena: @price</p>
-                <button @onclick="() => Buy(material.Name)" disabled="@(game.Player.Money < price)">Kup</button>
+                var imageName = GetImageName(material.Name);
+
+                <div class="material-entry" @onclick="() => Buy(material.Name)" title="@($"{material.Name} – Cena: {price}")">
+                    <div class="material-container">
+                        <img src=@($"images/materials/{imageName}.png") alt="@material.Name" class="material-icon" />
+                        <div class="overlay">Kup</div>
+                    </div>
+                    <div class="material-info">
+                        <p><strong>@material.Name</strong></p>
+                        <p>Cena: @price</p>
+                    </div>
+                </div>
             }
         </div>
+
 
         <div class="shop-right">
             <h4>Sprzedaż</h4>
 
-            <h5>Materiały przetworzone</h5>
-            @foreach (var material in sellableMaterialsProcessed)
-            {
-                var quantity = game.Player.Inventory.GetQuantity(material.Name);
-                var price = market.GetPrice(material.Name);
-                <p><strong>@material.Name</strong> – Cena: @price (Masz: @quantity)</p>
-                <button @onclick="() => Sell(material.Name)" disabled="@(quantity == 0)">Sprzedaj</button>
-            }
+            <div class="tabs">
+                <button @onclick='() => selectedTab = "materials"' class="@(selectedTab == "materials" ? "active" : null)">Materiały</button>
+                <button @onclick='() => selectedTab = "processed"' class="@(selectedTab == "processed" ? "active" : null)">Surowce przetworzone</button>
+                <button @onclick='() => selectedTab = "products"' class="@(selectedTab == "products" ? "active" : null)">Produkty</button>
+            </div>
 
-            <h5>Produkty</h5>
-            @foreach (var material in sellableMaterialsProducts)
-            {
-                var quantity = game.Player.Inventory.GetQuantity(material.Name);
-                var price = market.GetPrice(material.Name);
-                <p><strong>@material.Name</strong> – Cena: @price (Masz: @quantity)</p>
-                <button @onclick="() => Sell(material.Name)" disabled="@(quantity == 0)">Sprzedaj</button>
-            }
+            <div class="tab-content">
+                @foreach (var material in selectedTab switch
+                {
+                    "materials" => buyableMaterials,
+                    "processed" => sellableMaterialsProcessed,
+                    "products" => sellableMaterialsProducts,
+                    _ => new List<Material>()
+                })
+                {
+                    var qty = game.Player.Inventory.GetQuantity(material.Name);
+                    var price = market.GetPrice(material.Name);
+                    var imageName = GetImageName(material.Name);
+
+                    <div class="material-entry" @onclick="() => Sell(material.Name)" title="@($"{material.Name} – Cena: {price}")">
+                        <div class="material-container">
+                            <img src=@($"images/materials/{imageName}.png") alt="@material.Name" class="material-icon" />
+                            <div class="overlay">Sprzedaj</div>
+                        </div>
+                        <div class="material-info">
+                            <p><strong>@material.Name</strong></p>
+                            <p>Cena: @price</p>
+                            <p>Masz: @qty</p>
+                        </div>
+                    </div>
+                }
+            </div>
+
         </div>
     </div>
 }
@@ -63,6 +89,7 @@ else
     private System.Timers.Timer refreshTimer;
     private int secondsLeft = 30;
 
+    private string selectedTab = "materials";
     private string? message;
 
     protected override void OnInitialized()
@@ -93,6 +120,15 @@ else
         StateHasChanged();
     }
 
+    private string GetImageName(string name)
+    {
+        return name.ToLower()
+            .Replace(" ", "")
+            .Replace("ż", "z").Replace("ó", "o").Replace("ł", "l")
+            .Replace("ć", "c").Replace("ś", "s").Replace("ą", "a")
+            .Replace("ę", "e").Replace("ź", "z").Replace("ń", "n");
+    }
+
     public void Dispose()
     {
         refreshTimer?.Dispose();
@@ -108,7 +144,7 @@ else
             if (game.Player.TryAddToInventory(materialName, 1))
             {
                 game.Player.Money -= price;
-                market.AffectPrice(materialName, 1);
+                await market.AffectPrice(materialName, 1);
                 message = null;
                 await game.Save();
             }
@@ -125,7 +161,7 @@ else
         if (game.Player.Inventory.Remove(materialName, 1))
         {
             game.Player.Money += price;
-            market.AffectPrice(materialName, -1);
+            await market.AffectPrice(materialName, -1);
             message = null;
             await game.Save();
         }
