@@ -40,10 +40,10 @@ public class Player
     {
         return level switch
         {
-            2 => 1000,
-            3 => 5000,
-            4 => 15000,
-            5 => 25000,
+            2 => 100,
+            3 => 500,
+            4 => 1500,
+            5 => 2500,
             _ => int.MaxValue
         };
     }

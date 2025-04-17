@@ -1,37 +1,35 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">EcoSimGame</a>
-        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-    </div>
+﻿<div class="header-bar">
+    <img src="images/logo.png" alt="EcoSimGame Logo" class="header-logo" />
+    <button title="Menu" class="menu-button" @onclick="ToggleNavMenu">
+        <span class="navbar-toggler-icon"></span>
+    </button>
 </div>
 
 <div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
     <nav class="nav flex-column">
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+                <img src="images/main/home.png" class="menu-icon" alt="Home" /> Home
             </NavLink>
         </div>
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="Shop">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Sklep
+                <img src="images/main/sklep.png" class="menu-icon" alt="Sklep" /> Sklep
             </NavLink>
         </div>
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="Warehouse">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Magazyn
+                <img src="images/main/magazyn.png" class="menu-icon" alt="Magazyn" /> Magazyn
             </NavLink>
         </div>
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="CraftBuild">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Przetwarzanie
+                <img src="images/main/fabryka.png" class="menu-icon" alt="Przetwarzanie" /> Przetwarzanie
             </NavLink>
         </div>
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="DevelopmentCenter">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Centrum Rozwoju
+                <img src="images/main/centrumrozwoju.png" class="menu-icon" alt="Centrum Rozwoju" /> Centrum Rozwoju
             </NavLink>
         </div>
     </nav>
