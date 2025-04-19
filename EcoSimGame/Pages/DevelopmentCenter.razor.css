@@ -55,3 +55,91 @@
     color: red;
     font-weight: bold;
 }
+
+.energy-buildings-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.building-card {
+    background-color: #f5f5f5;
+    border: 2px solid #2196F3;
+    border-radius: 12px;
+    padding: 1rem;
+    width: 230px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: transform 0.2s ease;
+}
+
+    .building-card:hover {
+        transform: scale(1.05);
+    }
+
+.building-image {
+    width: 100px;
+    height: 100px;
+    border-radius: 12px;
+    object-fit: cover;
+    margin-bottom: 0.5rem;
+}
+
+.building-info {
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.building-card button {
+    background-color: #2196F3;
+    color: white;
+    border: none;
+    padding: 0.4rem 1rem;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+    .building-card button:hover {
+        background-color: #0b7dda;
+    }
+
+.infrastructure-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+.infrastructure-container {
+    width: 45%;
+    background-color: #f5f5f5;
+    border-radius: 10px;
+    padding: 1rem;
+    box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+    .infrastructure-container h5 {
+        margin-bottom: 1rem;
+        font-size: 1.2rem;
+        text-align: center;
+    }
+
+.building-cards-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.infrastructure-container-full {
+    width: 95%;
+}

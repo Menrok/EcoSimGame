@@ -18,7 +18,7 @@ public class Player
 
     public Player()
     {
-        Name = "Menrok";
+        Name = "Nazwa";
         Money = 1000.0m;
         Level = 1;
         Experience = 0;

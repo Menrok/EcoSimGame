@@ -4,8 +4,6 @@
 @inject Services.GameStateService game
 @implements IDisposable
 
-<h3>Centrum Rozwoju</h3>
-
 <div class="tabs-wrapper">
     <div class="tabs">
         <button @onclick='() => SetActiveTab("tree")' class="@(activeTab == "tree" ? "active" : null)">Drzewko Produkcji</button>
@@ -18,9 +16,6 @@
     @if (activeTab == "tree")
     {
         <h4>Drzewko Produkcji</h4>
-        <p>Poziom gracza: <strong>@game.Player.Level</strong></p>
-        <p>Doświadczenie: <strong>@game.Player.Experience / @game.Player.GetExperienceForNextLevel(game.Player.Level + 1)</strong></p>
-        <p>Saldo: <strong>@game.Player.Money</strong></p>
 
         <ul>
             @foreach (var node in productionTree.Nodes)
@@ -49,12 +44,59 @@
     }
     else if (activeTab == "infrastructure")
     {
-        <h4>Rozbudowa Infrastruktury</h4>
-        <p><strong>Magazyn Towarów:</strong> @game.Player.GetCurrentInventorySize() / @game.Player.WarehouseCapacity</p>
-        <button @onclick="UpgradeWarehouse">Ulepsz magazyn (Koszt: @game.Player.WarehouseUpgradeCost)</button>
+        <div class="infrastructure-grid">
 
-        <p><strong>Magazyn Energii:</strong> @game.Energy.CurrentEnergy / @game.Energy.MaxEnergy</p>
-        <button @onclick="UpgradeEnergy">Ulepsz magazyn energii (Koszt: @game.Energy.UpgradeCost)</button>
+            <div class="infrastructure-container">
+                <h5>Magazyn Towarów</h5>
+                <div class="building-cards-row">
+                    <div class="building-card">
+                        <img src="images/warehouse/magazyn.png" alt="Magazyn Towarów" class="building-image" />
+                        <div class="building-info">
+                            <strong>Magazyn Towarów</strong><br />
+                            @game.Player.GetCurrentInventorySize() / @game.Player.WarehouseCapacity<br />
+                            Koszt ulepszenia: @game.Player.WarehouseUpgradeCost
+                        </div>
+                        <button @onclick="UpgradeWarehouse">Ulepsz</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="infrastructure-container">
+                <h5>Magazyn Energii</h5>
+                <div class="building-cards-row">
+                    <div class="building-card">
+                        <img src="images/energy/magazyn.png" alt="Magazyn Energii" class="building-image" />
+                        <div class="building-info">
+                            <strong>Magazyn Energii</strong><br />
+                            @game.Energy.CurrentEnergy / @game.Energy.MaxEnergy<br />
+                            Koszt ulepszenia: @game.Energy.UpgradeCost
+                        </div>
+                        <button @onclick="UpgradeEnergy">Ulepsz</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="infrastructure-container infrastructure-container-full">
+                <h5>Produkcja Energii</h5>
+                <div class="building-cards-row">
+                    @foreach (var building in EcoSimGame.Models.List.EnergyProductionList.AllBuildings)
+                    {
+                        var imageName = GetBuildingImage(building.Name);
+
+                        <div class="building-card">
+                            <img src="images/energy/@imageName" alt="@building.Name" class="building-image" />
+                            <div class="building-info">
+                                <strong>@building.Name</strong><br />
+                                Produkcja: +@building.EnergyPerTick energii / 10s<br />
+                                Koszt: @building.Cost
+                            </div>
+                            <button @onclick="() => TryBuyEnergyBuilding(building)">Kup</button>
+                        </div>
+                    }
+                </div>
+            </div>
+
+        </div>
     }
     else if (activeTab == "research")
     {
@@ -123,6 +165,37 @@
             errorMessage = "Za mało środków na ulepszenie energii.";
         }
     }
+
+    private async Task TryBuyEnergyBuilding(EcoSimGame.Models.EnergyProduction building)
+    {
+        errorMessage = null;
+
+        if (game.Player.Money >= building.Cost)
+        {
+            game.Player.Money -= building.Cost;
+            game.Energy.GeneratedEnergyPerTick += building.EnergyPerTick;
+            await game.Save();
+        }
+        else
+        {
+            errorMessage = "Za mało pieniędzy na budowę!";
+        }
+    }
+
+    private string GetBuildingImage(string name)
+    {
+        return name.ToLower()
+            .Replace(" ", "")
+            .Replace("ł", "l")
+            .Replace("ó", "o")
+            .Replace("ę", "e")
+            .Replace("ś", "s")
+            .Replace("ą", "a")
+            .Replace("ż", "z")
+            .Replace("ź", "z")
+            .Replace("ń", "n") + ".png";
+    }
+
 
     public void Dispose()
     {

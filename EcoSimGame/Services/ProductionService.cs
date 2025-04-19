@@ -1,111 +1,89 @@
-﻿using EcoSimGame.Models;
+﻿using Blazored.LocalStorage;
+using EcoSimGame.Models;
 
-namespace EcoSimGame.Services;
-
-public class ProductionService
+namespace EcoSimGame.Services
 {
-    public List<ProductionTask> Queue { get; } = new();
-    public ProductionTask? CurrentTask => Queue.FirstOrDefault();
-
-    public EnergyStorage Energy => PlayerRef?.EnergyStorage ?? new EnergyStorage();
-
-    private readonly System.Timers.Timer timer;
-
-    public event Action? OnUpdate;
-    public Player? PlayerRef { get; set; }
-    public Blazored.LocalStorage.ILocalStorageService? LocalStorageRef { get; set; }
-
-    public ProductionService()
+    public class ProductionService
     {
-        timer = new System.Timers.Timer(1000);
-        timer.Elapsed += (_, _) => Tick();
-        timer.Start();
-    }
+        public List<ProductionTask> Queue { get; } = new();
+        public ProductionTask? CurrentTask => Queue.FirstOrDefault();
+        private readonly System.Timers.Timer timer;
 
-    private void Tick()
-    {
-        Energy.Recharge();
+        public Player? PlayerRef { get; set; }
+        public ILocalStorageService? LocalStorageRef { get; set; }
+        public event Action? OnUpdate;
 
-        if (Queue.Any())
+        public ProductionService()
         {
-            var current = Queue[0];
+            timer = new System.Timers.Timer(1000);
+            timer.Elapsed += (_, _) => Tick();
+            timer.Start();
+        }
 
-            if (current.StartTime == default)
+        private void Tick()
+        {
+            if (Queue.Any())
             {
-                current.StartTime = DateTime.Now;
-            }
+                var current = Queue[0];
 
-            var elapsed = (DateTime.Now - current.StartTime).TotalSeconds;
-            current.TimeRemaining = Math.Max(0, current.DurationSeconds - (int)elapsed);
+                if (current.StartTime == default)
+                    current.StartTime = DateTime.Now;
 
-            if (current.TimeRemaining <= 0)
-            {
-                if (PlayerRef != null)
+                var elapsed = (DateTime.Now - current.StartTime).TotalSeconds;
+                current.TimeRemaining = Math.Max(0, current.DurationSeconds - (int)elapsed);
+
+                if (current.TimeRemaining <= 0)
                 {
-                    PlayerRef.Inventory.Add(current.OutputMaterial, current.OutputQuantity);
+                    FinishTask(current);
+                    Queue.RemoveAt(0);
 
-                    switch (current.OutputMaterial)
-                    {
-                        case "Deski":
-                        case "Sztabka żelaza":
-                        case "Cegła":
-                        case "Płótno":
-                            PlayerRef.AddExperience(1);
-                            break;
-
-                        case "Narzędzia":
-                        case "Odzież":
-                            PlayerRef.AddExperience(5);
-                            break;
-                    }
-
-                    SavePlayerState();
+                    if (Queue.Any())
+                        Queue[0].StartTime = DateTime.Now;
                 }
-
-                Queue.RemoveAt(0);
             }
 
+            OnUpdate?.Invoke();
         }
 
-        OnUpdate?.Invoke();
-    }
-
-    public bool AddToQueue(ProductionTask task)
-    {
-        if (PlayerRef == null) return false;
-
-        foreach (var kvp in task.Ingredients)
+        private void FinishTask(ProductionTask task)
         {
-            if (PlayerRef.Inventory.GetQuantity(kvp.Key) < kvp.Value)
-                return false;
+            if (PlayerRef != null)
+            {
+                PlayerRef.Inventory.Add(task.OutputMaterial, task.OutputQuantity);
+
+                if (task.OutputMaterial is "Deski" or "Sztabka żelaza" or "Cegła" or "Płótno")
+                    PlayerRef.AddExperience(1);
+                else if (task.OutputMaterial is "Narzędzia" or "Odzież")
+                    PlayerRef.AddExperience(5);
+
+                SavePlayerState();
+            }
         }
 
-        if (!Energy.UseEnergy(task.EnergyCost)) return false;
-
-        foreach (var kvp in task.Ingredients)
+        public bool AddToQueue(ProductionTask task)
         {
-            PlayerRef.Inventory.Remove(kvp.Key, kvp.Value);
-        }
+            if (PlayerRef == null) return false;
 
-        Queue.Add(task);
-        SavePlayerState();
-        return true;
-    }
+            if (!task.Ingredients.All(i => PlayerRef.Inventory.GetQuantity(i.Key) >= i.Value)) return false;
+            if (!PlayerRef.EnergyStorage.UseEnergy(task.EnergyCost)) return false;
 
-    public void UpgradeEnergyStorage()
-    {
-        if (PlayerRef != null && PlayerRef.EnergyStorage.TryUpgrade(PlayerRef.Money, out decimal newMoney))
-        {
-            PlayerRef.Money = newMoney;
+            foreach (var ingredient in task.Ingredients)
+                PlayerRef.Inventory.Remove(ingredient.Key, ingredient.Value);
+
+            if (!Queue.Any())
+                task.StartTime = DateTime.Now;
+
+            Queue.Add(task);
             SavePlayerState();
+            return true;
         }
-    }
 
-    private async void SavePlayerState()
-    {
-        if (PlayerRef != null && LocalStorageRef != null)
+        private async void SavePlayerState()
         {
-            await LocalStorageRef.SetItemAsync("player", PlayerRef);
+            if (PlayerRef != null && LocalStorageRef != null)
+            {
+                await LocalStorageRef.SetItemAsync("player", PlayerRef);
+            }
         }
     }
 }

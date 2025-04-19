@@ -5,8 +5,10 @@ public class EnergyStorage
     public int MaxEnergy { get; set; } = 100;
     public int CurrentEnergy { get; set; } = 100;
 
-    public int RechargeIntervalMs { get; set; } = 3000;
+    public int RechargeIntervalMs { get; set; } = 10000;
     public decimal UpgradeCost { get; set; } = 100;
+
+    public int GeneratedEnergyPerTick { get; set; } = 0;
 
     private DateTime lastRecharge = DateTime.Now;
 
@@ -20,7 +22,9 @@ public class EnergyStorage
 
         if (elapsedMs >= RechargeIntervalMs)
         {
-            CurrentEnergy++;
+            int totalGenerated = 1 + GeneratedEnergyPerTick;
+            CurrentEnergy = Math.Min(MaxEnergy, CurrentEnergy + totalGenerated);
+
             lastRecharge = now;
         }
     }
@@ -43,13 +47,15 @@ public class EnergyStorage
         {
             newMoney -= UpgradeCost;
             MaxEnergy += 50;
-
-            RechargeIntervalMs = Math.Max(1000, RechargeIntervalMs - 500);
-
             UpgradeCost += 50;
             return true;
         }
 
         return false;
+    }
+
+    public void AddEnergyProduction(int amount)
+    {
+        GeneratedEnergyPerTick += amount;
     }
 }

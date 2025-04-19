@@ -8,13 +8,14 @@
 @using EcoSimGame.Models
 
 <div class="page">
+
     <div class="sidebar">
         <NavMenu />
     </div>
-
     <main>
         <div class="top-row px-4">
             <div class="user-info">
+
                 <span><strong>@game.Player.Name</strong></span> |
 
                 <span>
@@ -44,7 +45,6 @@
             </div>
         </div>
 
-
         <article class="content px-4">
             @Body
         </article>
@@ -56,11 +56,17 @@
     {
         await market.InitializeAsync();
         await game.Load();
+
+        production.PlayerRef = game.Player;
+        production.LocalStorageRef = localStorage;
+
         game.OnUpdate += StateHasChanged;
+        production.OnUpdate += StateHasChanged;
     }
 
     public void Dispose()
     {
         game.OnUpdate -= StateHasChanged;
+        production.OnUpdate -= StateHasChanged;
     }
 }

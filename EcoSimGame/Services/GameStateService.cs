@@ -1,85 +1,55 @@
 ﻿using Blazored.LocalStorage;
 using EcoSimGame.Models;
-using EcoSimGame.Services;
+using EcoSimGame.Models.List;
 
-namespace EcoSimGame.Services;
-
-public class GameStateService
+namespace EcoSimGame.Services
 {
-    public Player Player { get; private set; } = new();
-    public EnergyStorage Energy => Player.EnergyStorage;
-    public List<ProductionTask> ProductionQueue { get; } = new();
-    public MarketService Market { get; }
-
-    private readonly ILocalStorageService localStorage;
-    private readonly System.Timers.Timer tickTimer;
-
-    public event Action? OnUpdate;
-
-    public GameStateService(ILocalStorageService localStorage, MarketService market)
+    public class GameStateService
     {
-        this.localStorage = localStorage;
-        Market = market;
+        public Player Player { get; private set; } = new();
+        public EnergyStorage Energy => Player.EnergyStorage;
+        public List<EnergyProduction> EnergyBuildings { get; private set; } = new();
 
-        tickTimer = new System.Timers.Timer(10);
-        tickTimer.Elapsed += async (_, _) => await OnTick();
-        tickTimer.Start();
-    }
+        public MarketService Market { get; }
+        private readonly ILocalStorageService localStorage;
+        private readonly System.Timers.Timer tickTimer;
 
-    private async Task OnTick()
-    {
-        Energy.Recharge();
+        public event Action? OnUpdate;
 
-        if (ProductionQueue.Any())
+        public GameStateService(ILocalStorageService localStorage, MarketService market)
         {
-            var current = ProductionQueue[0];
+            this.localStorage = localStorage;
+            Market = market;
 
-            if (current.StartTime == default)
-                current.StartTime = DateTime.Now;
-
-            var elapsed = (DateTime.Now - current.StartTime).TotalSeconds;
-            current.TimeRemaining = Math.Max(0, current.DurationSeconds - (int)elapsed);
-
-            if (current.TimeRemaining <= 0)
-            {
-                Player.Inventory.Add(current.OutputMaterial, current.OutputQuantity);
-                Player.AddExperience(GetExpFor(current.OutputMaterial));
-                ProductionQueue.RemoveAt(0);
-                await Save();
-            }
+            tickTimer = new System.Timers.Timer(100);
+            tickTimer.Elapsed += (_, _) => Tick();
+            tickTimer.Start();
         }
 
-        OnUpdate?.Invoke();
-    }
+        private void Tick()
+        {
+            Energy.Recharge();
+            OnUpdate?.Invoke();
+        }
 
-    public bool TryStartProduction(ProductionTask task)
-    {
-        if (!task.Ingredients.All(i => Player.Inventory.GetQuantity(i.Key) >= i.Value)) return false;
-        if (!Energy.UseEnergy(task.EnergyCost)) return false;
+        public async Task Load()
+        {
+            var stored = await localStorage.GetItemAsync<Player>("player");
+            if (stored != null)
+                Player = stored;
 
-        foreach (var i in task.Ingredients)
-            Player.Inventory.Remove(i.Key, i.Value);
+            InitializeEnergyBuildings();
+        }
 
-        task.StartTime = DateTime.Now;
-        ProductionQueue.Add(task);
-        return true;
-    }
-
-    private int GetExpFor(string material) => material switch
-    {
-        "Deski" or "Sztabka żelaza" or "Cegła" or "Płótno" => 1,
-        "Narzędzia" or "Odzież" => 5,
-        _ => 0
-    };
-
-    public async Task Load()
-    {
-        var stored = await localStorage.GetItemAsync<Player>("player");
-        if (stored != null) Player = stored;
-    }
-
-    public async Task Save()
-    {
-        await localStorage.SetItemAsync("player", Player);
+        public async Task Save()
+        {
+            await localStorage.SetItemAsync("player", Player);
+        }
+        private void InitializeEnergyBuildings()
+        {
+            EnergyBuildings = EnergyProductionList.AllBuildings
+                .Select(b => new EnergyProduction(b.Name, b.EnergyPerTick, b.Cost))
+                .ToList();
+        }
     }
 }
