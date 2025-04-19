@@ -15,19 +15,24 @@
 <div class="tab-content">
     @if (activeTab == "tree")
     {
-        <h4>Drzewko Produkcji</h4>
+        <div class="infrastructure-container infrastructure-container-full">
+            <div class="building-cards-row">
+                @foreach (var node in productionTree.Nodes)
+                {
+                    var imageName = GetImageName(node.Name);
 
-        <ul>
-            @foreach (var node in productionTree.Nodes)
-            {
-                <li>
-                    <div class="node-entry">
-                        <strong>@node.Name</strong><br />
-                        Wymagany poziom: @node.RequiredLevel | Cena: @node.CostMoney
+                    <div class="building-card">
+                        <img src=@($"images/materials/{imageName}.png") alt="@node.Name" class="production-image" />
+
+                        <div class="building-info">
+                            <strong>@node.Name</strong><br />
+                            Wymagany poziom: @node.RequiredLevel<br />
+                            Cena: @node.CostMoney zł
+                        </div>
 
                         @if (game.Player.HasSchematic(node.Name))
                         {
-                            <span class="owned"> (Schemat posiadasz)</span>
+                            <span class="owned">(Schemat posiadasz)</span>
                         }
                         else if (game.Player.Level >= node.RequiredLevel)
                         {
@@ -35,12 +40,13 @@
                         }
                         else
                         {
-                            <span class="locked"> (Osiągnij poziom @node.RequiredLevel)</span>
+                            <span class="locked">(Osiągnij poziom @node.RequiredLevel)</span>
                         }
                     </div>
-                </li>
-            }
-        </ul>
+                }
+            </div>
+        </div>
+
     }
     else if (activeTab == "infrastructure")
     {
@@ -196,6 +202,14 @@
             .Replace("ń", "n") + ".png";
     }
 
+    private string GetImageName(string name)
+    {
+        return name.ToLower()
+            .Replace(" ", "")
+            .Replace("ż", "z").Replace("ó", "o").Replace("ł", "l")
+            .Replace("ć", "c").Replace("ś", "s").Replace("ą", "a")
+            .Replace("ę", "e").Replace("ź", "z").Replace("ń", "n");
+    }
 
     public void Dispose()
     {

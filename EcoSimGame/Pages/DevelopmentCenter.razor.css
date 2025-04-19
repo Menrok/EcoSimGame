@@ -32,35 +32,40 @@
     box-shadow: 0 0 4px rgba(0,0,0,0.1);
 }
 
-    .tab-content button {
-        width: 100%;
-        text-align: left;
-        margin-top: 0.3rem;
-    }
-
-
-.node-entry {
-    margin-bottom: 12px;
+.infrastructure-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    justify-content: center;
+    margin-top: 1rem;
 }
 
-.owned {
-    color: green;
+.infrastructure-container {
+    width: 45%;
+    background-color: #f5f5f5;
+    border-radius: 10px;
+    padding: 1rem;
+    box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-.locked {
-    color: gray;
+.infrastructure-container-full {
+    width: 95%;
 }
 
-.error {
-    color: red;
-    font-weight: bold;
+.infrastructure-container h5 {
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    text-align: center;
 }
 
-.energy-buildings-grid {
+.building-cards-row {
     display: flex;
     flex-wrap: wrap;
     gap: 1rem;
-    margin-top: 1rem;
+    justify-content: center;
 }
 
 .building-card {
@@ -86,6 +91,8 @@
     border-radius: 12px;
     object-fit: cover;
     margin-bottom: 0.5rem;
+    filter: brightness(1.3);
+    transition: filter 0.3s ease;
 }
 
 .building-info {
@@ -108,38 +115,27 @@
         background-color: #0b7dda;
     }
 
-.infrastructure-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 2rem;
-    justify-content: center;
-    margin-top: 1rem;
+.owned {
+    color: green;
+    font-weight: bold;
 }
 
-.infrastructure-container {
-    width: 45%;
-    background-color: #f5f5f5;
-    border-radius: 10px;
-    padding: 1rem;
-    box-shadow: 0 0 8px rgba(0,0,0,0.1);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+.locked {
+    color: gray;
+    font-weight: bold;
 }
 
-    .infrastructure-container h5 {
-        margin-bottom: 1rem;
-        font-size: 1.2rem;
-        text-align: center;
-    }
-
-.building-cards-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    justify-content: center;
+.error {
+    color: red;
+    font-weight: bold;
 }
 
-.infrastructure-container-full {
-    width: 95%;
+.production-image {
+    width: 100px;
+    height: 100px;
+    border-radius: 12px;
+    object-fit: cover;
+    margin-bottom: 0.5rem;
+    filter: brightness(1.3);
+    transition: filter 0.3s ease;
 }
