@@ -20,13 +20,15 @@ button {
     color: white;
     border: none;
     border-radius: 6px;
-    font-weight: bold;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.3s, transform 0.2s;
+    text-shadow: -1px -1px 0 #8B4513, 1px -1px 0 #8B4513, -1px 1px 0 #8B4513, 1px 1px 0 #8B4513;
+    color: #FFDEAD;
 }
 
     button:hover {
-        background-color: #0b7dda;
+        background-color: #2a2d35;
+        transform: scale(1.02);
     }
 
 .tabs {
@@ -44,8 +46,7 @@ button {
     }
 
     .tabs .active {
-        background-color: #2196F3;
-        color: white;
+        background-color: #696969;
     }
 
 h4, h5 {

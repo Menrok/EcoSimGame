@@ -3,8 +3,6 @@
 @inject Services.GameStateService game
 @using EcoSimGame.Models
 
-<h3>Produkcja</h3>
-
 <div class="crafting-container">
     <div class="crafting-left">
         <h4>Dostępne receptury</h4>
@@ -12,34 +10,73 @@
         <div class="recipe-grid">
             <div class="recipe-card" @onclick='() => TryStartProduction("Deski", 10, 5, new Dictionary<string, int>{{"Drewno", 2}}, "Deski")'>
                 <div class="ingredient-icons">
-                    <img src="images/materials/drewno.png" alt="Drewno" class="ingredient-icon" />
-                    <img src="images/materials/drewno.png" alt="Drewno" class="ingredient-icon" />
+                    <div class="ingredient-item">
+                        <img src="images/materials/drewno.png" alt="Drewno" class="ingredient-icon" />
+                        <div class="ingredient-label">Drewno (@game.Player.Inventory.GetQuantity("Drewno"))</div>
+                    </div>
+                    <div class="ingredient-item">
+                        <img src="images/materials/drewno.png" alt="Drewno" class="ingredient-icon" />
+                        <div class="ingredient-label">Drewno (@game.Player.Inventory.GetQuantity("Drewno"))</div>
+                    </div>
                     <div class="arrow">→</div>
-                    <img src="images/materials/deski.png" alt="Deski" class="ingredient-icon" />
+                    <div class="ingredient-item">
+                        <img src="images/materials/deski.png" alt="Deski" class="ingredient-icon" />
+                        <div class="ingredient-label">Deski (@game.Player.Inventory.GetQuantity("Deski"))</div>
+                    </div>
                 </div>
             </div>
+
             <div class="recipe-card" @onclick='() => TryStartProduction("Sztabka żelaza", 15, 8, new Dictionary<string, int>{{"Ruda żelaza", 2}}, "Sztabka żelaza")'>
                 <div class="ingredient-icons">
-                    <img src="images/materials/rudazelaza.png" alt="Ruda żelaza" class="ingredient-icon" />
-                    <img src="images/materials/rudazelaza.png" alt="Ruda żelaza" class="ingredient-icon" />
+                    <div class="ingredient-item">
+                        <img src="images/materials/rudazelaza.png" alt="Ruda żelaza" class="ingredient-icon" />
+                        <div class="ingredient-label">Ruda żelaza (@game.Player.Inventory.GetQuantity("Ruda żelaza"))</div>
+                    </div>
+                    <div class="ingredient-item">
+                        <img src="images/materials/rudazelaza.png" alt="Ruda żelaza" class="ingredient-icon" />
+                        <div class="ingredient-label">Ruda żelaza (@game.Player.Inventory.GetQuantity("Ruda żelaza"))</div>
+                    </div>
                     <div class="arrow">→</div>
-                    <img src="images/materials/sztabkazelaza.png" alt="Sztabka żelaza" class="ingredient-icon" />
+                    <div class="ingredient-item">
+                        <img src="images/materials/sztabkazelaza.png" alt="Sztabka żelaza" class="ingredient-icon" />
+                        <div class="ingredient-label">Sztabka żelaza (@game.Player.Inventory.GetQuantity("Sztabka żelaza"))</div>
+                    </div>
                 </div>
             </div>
+
             <div class="recipe-card" @onclick='() => TryStartProduction("Cegła", 12, 6, new Dictionary<string, int>{{"Glina", 2}}, "Cegła")'>
                 <div class="ingredient-icons">
-                    <img src="images/materials/glina.png" alt="Glina" class="ingredient-icon" />
-                    <img src="images/materials/glina.png" alt="Glina" class="ingredient-icon" />
+                    <div class="ingredient-item">
+                        <img src="images/materials/glina.png" alt="Glina" class="ingredient-icon" />
+                        <div class="ingredient-label">Glina (@game.Player.Inventory.GetQuantity("Glina"))</div>
+                    </div>
+                    <div class="ingredient-item">
+                        <img src="images/materials/glina.png" alt="Glina" class="ingredient-icon" />
+                        <div class="ingredient-label">Glina (@game.Player.Inventory.GetQuantity("Glina"))</div>
+                    </div>
                     <div class="arrow">→</div>
-                    <img src="images/materials/cegla.png" alt="Cegła" class="ingredient-icon" />
+                    <div class="ingredient-item">
+                        <img src="images/materials/cegla.png" alt="Cegła" class="ingredient-icon" />
+                        <div class="ingredient-label">Cegła (@game.Player.Inventory.GetQuantity("Cegła"))</div>
+                    </div>
                 </div>
             </div>
+
             <div class="recipe-card" @onclick='() => TryStartProduction("Płótno", 10, 4, new Dictionary<string, int>{{"Len", 2}}, "Płótno")'>
                 <div class="ingredient-icons">
-                    <img src="images/materials/len.png" alt="Len" class="ingredient-icon" />
-                    <img src="images/materials/len.png" alt="Len" class="ingredient-icon" />
+                    <div class="ingredient-item">
+                        <img src="images/materials/len.png" alt="Len" class="ingredient-icon" />
+                        <div class="ingredient-label">Len (@game.Player.Inventory.GetQuantity("Len"))</div>
+                    </div>
+                    <div class="ingredient-item">
+                        <img src="images/materials/len.png" alt="Len" class="ingredient-icon" />
+                        <div class="ingredient-label">Len (@game.Player.Inventory.GetQuantity("Len"))</div>
+                    </div>
                     <div class="arrow">→</div>
-                    <img src="images/materials/plotno.png" alt="Płótno" class="ingredient-icon" />
+                    <div class="ingredient-item">
+                        <img src="images/materials/plotno.png" alt="Płótno" class="ingredient-icon" />
+                        <div class="ingredient-label">Płótno (@game.Player.Inventory.GetQuantity("Płótno"))</div>
+                    </div>
                 </div>
             </div>
 
@@ -47,11 +84,23 @@
             {
                 <div class="recipe-card" @onclick='() => TryStartProduction("Narzędzia", 20, 10, new Dictionary<string, int>{{"Deski", 1}, {"Sztabka żelaza", 2}}, "Narzędzia")'>
                     <div class="ingredient-icons">
-                        <img src="images/materials/deski.png" alt="Deski" class="ingredient-icon" />
-                        <img src="images/materials/sztabkazelaza.png" alt="Sztabka żelaza" class="ingredient-icon" />
-                        <img src="images/materials/sztabkazelaza.png" alt="Sztabka żelaza" class="ingredient-icon" />
+                        <div class="ingredient-item">
+                            <img src="images/materials/deski.png" alt="Deski" class="ingredient-icon" />
+                            <div class="ingredient-label">Deski (@game.Player.Inventory.GetQuantity("Deski"))</div>
+                        </div>
+                        <div class="ingredient-item">
+                            <img src="images/materials/sztabkazelaza.png" alt="Sztabka żelaza" class="ingredient-icon" />
+                            <div class="ingredient-label">Sztabka żelaza (@game.Player.Inventory.GetQuantity("Sztabka żelaza"))</div>
+                        </div>
+                        <div class="ingredient-item">
+                            <img src="images/materials/sztabkazelaza.png" alt="Sztabka żelaza" class="ingredient-icon" />
+                            <div class="ingredient-label">Sztabka żelaza (@game.Player.Inventory.GetQuantity("Sztabka żelaza"))</div>
+                        </div>
                         <div class="arrow">→</div>
-                        <img src="images/materials/narzedzia.png" alt="Narzędzia" class="ingredient-icon" />
+                        <div class="ingredient-item">
+                            <img src="images/materials/narzedzia.png" alt="Narzędzia" class="ingredient-icon" />
+                            <div class="ingredient-label">Narzędzia (@game.Player.Inventory.GetQuantity("Narzędzia"))</div>
+                        </div>
                     </div>
                 </div>
             }
@@ -60,14 +109,22 @@
             {
                 <div class="recipe-card" @onclick='() => TryStartProduction("Odzież", 25, 12, new Dictionary<string, int>{{"Płótno", 2}}, "Odzież")'>
                     <div class="ingredient-icons">
-                        <img src="images/materials/plotno.png" alt="Płótno" class="ingredient-icon" />
-                        <img src="images/materials/plotno.png" alt="Płótno" class="ingredient-icon" />
+                        <div class="ingredient-item">
+                            <img src="images/materials/plotno.png" alt="Płótno" class="ingredient-icon" />
+                            <div class="ingredient-label">Płótno (@game.Player.Inventory.GetQuantity("Płótno"))</div>
+                        </div>
+                        <div class="ingredient-item">
+                            <img src="images/materials/plotno.png" alt="Płótno" class="ingredient-icon" />
+                            <div class="ingredient-label">Płótno (@game.Player.Inventory.GetQuantity("Płótno"))</div>
+                        </div>
                         <div class="arrow">→</div>
-                        <img src="images/materials/odziez.png" alt="Odzież" class="ingredient-icon" />
+                        <div class="ingredient-item">
+                            <img src="images/materials/odziez.png" alt="Odzież" class="ingredient-icon" />
+                            <div class="ingredient-label">Odzież (@game.Player.Inventory.GetQuantity("Odzież"))</div>
+                        </div>
                     </div>
                 </div>
             }
-
         </div>
 
         @if (!string.IsNullOrEmpty(errorMessage))
