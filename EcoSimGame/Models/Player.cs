@@ -10,12 +10,13 @@ public class Player
     public int Experience { get; set; }
 
     public Inventory Inventory { get; set; }
-    public int WarehouseCapacity { get; set; } = 100;
-    public int WarehouseUpgradeCost { get; set; } = 200;
+    public int WarehouseCapacity { get; set; } = 0;
 
     public EnergyStorage EnergyStorage { get; set; } = new();
     public List<PowerPlantSlot> PowerPlantSlots { get; set; } = new();
     public List<EnergyStorageSlot> EnergyStorageSlots { get; set; } = new();
+    public List<WarehouseSlot> WarehouseSlots { get; set; } = new();
+
 
     public DateTime? LastProcessingTime { get; set; }
     public List<string> OwnedSchematics { get; set; }
@@ -72,18 +73,6 @@ public class Player
     public bool HasSchematic(string schematicName) => OwnedSchematics.Contains(schematicName);
     public int GetCurrentInventorySize() => Inventory.GetAllWithQuantity().Sum(item => item.Quantity);
     public bool CanAddToWarehouse(int quantity) => GetCurrentInventorySize() + quantity <= WarehouseCapacity;
-    
-    public bool UpgradeWarehouse()
-    {
-        if (Money >= WarehouseUpgradeCost)
-        {
-            Money -= WarehouseUpgradeCost;
-            WarehouseCapacity += 50;
-            WarehouseUpgradeCost += 1000;
-            return true;
-        }
-        return false;
-    }
 
     public bool TryAddToInventory(string materialName, int quantity)
     {
@@ -92,5 +81,12 @@ public class Player
 
         Inventory.Add(materialName, quantity);
         return true;
+    }
+
+    public void UpdateTotalWarehouseCapacity()
+    {
+        WarehouseCapacity = WarehouseSlots
+            .Where(w => w.IsBuilt)
+            .Sum(w => w.Capacity);
     }
 }

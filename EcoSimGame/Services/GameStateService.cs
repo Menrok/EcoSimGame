@@ -12,6 +12,8 @@ namespace EcoSimGame.Services
         public List<EnergyProduction> EnergyBuildings { get; private set; } = new();
         public List<PowerPlantSlot> PowerPlantSlots => Player.PowerPlantSlots;
         public List<EnergyStorageSlot> EnergyStorageSlots => Player.EnergyStorageSlots;
+        public List<WarehouseSlot> WarehouseSlots => Player.WarehouseSlots;
+
 
         public MarketService Market { get; }
         private readonly ILocalStorageService localStorage;
@@ -51,13 +53,20 @@ namespace EcoSimGame.Services
                 {
                     Player.EnergyStorageSlots = Enumerable.Range(0, 2).Select(_ => new EnergyStorageSlot()).ToList();
                 }
+
+                if (Player.WarehouseSlots == null || Player.WarehouseSlots.Count == 0)
+                {
+                    Player.WarehouseSlots = Enumerable.Range(0, 4).Select(_ => new WarehouseSlot()).ToList();
+                }
+
             }
             else
             {
                 Player = new Player
                 {
                     PowerPlantSlots = Enumerable.Range(0, 5).Select(_ => new PowerPlantSlot()).ToList(),
-                    EnergyStorageSlots = Enumerable.Range(0, 2).Select(_ => new EnergyStorageSlot()).ToList()
+                    EnergyStorageSlots = Enumerable.Range(0, 2).Select(_ => new EnergyStorageSlot()).ToList(),
+                    WarehouseSlots = Enumerable.Range(0, 4).Select(_ => new WarehouseSlot()).ToList()
                 };
             }
 
@@ -66,6 +75,8 @@ namespace EcoSimGame.Services
             Player.EnergyStorage.GeneratedEnergyPerTick = Player.PowerPlantSlots
                 .Where(s => s.IsOccupied && s.Building != null)
                 .Sum(s => s.Building.EnergyPerTick);
+
+            UpdateTotalEnergyStorage();
         }
 
 
@@ -107,6 +118,19 @@ namespace EcoSimGame.Services
             }
         }
 
+        public void InitializeWarehouseSlots()
+        {
+            if (Player.WarehouseSlots == null || Player.WarehouseSlots.Count == 0)
+            {
+                Player.WarehouseSlots = new List<WarehouseSlot>();
+                for (int i = 0; i < 4; i++)
+                {
+                    Player.WarehouseSlots.Add(new WarehouseSlot());
+                }
+            }
+        }
+
+
         public void SetPowerPlant(int slotIndex, EnergyProduction newPlant)
         {
             if (slotIndex < 0 || slotIndex >= PowerPlantSlots.Count)
@@ -123,6 +147,16 @@ namespace EcoSimGame.Services
             slot.IsOccupied = true;
 
             Player.EnergyStorage.GeneratedEnergyPerTick += newPlant.EnergyPerTick;
+            OnUpdate?.Invoke();
         }
+
+        public void UpdateTotalEnergyStorage()
+        {
+            Player.EnergyStorage.MaxEnergy = Player.EnergyStorageSlots
+                .Where(s => s.IsBuilt)
+                .Sum(s => s.Capacity);
+            OnUpdate?.Invoke();
+        }
+
     }
 }

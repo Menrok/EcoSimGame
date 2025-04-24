@@ -60,9 +60,9 @@
                         <div class="building-info">
                             <strong>Magazyn Towarów</strong><br />
                             @game.Player.GetCurrentInventorySize() / @game.Player.WarehouseCapacity<br />
-                            Koszt ulepszenia: @game.Player.WarehouseUpgradeCost
+                            Koszt ulepszenia:
                         </div>
-                        <button @onclick="UpgradeWarehouse">Ulepsz</button>
+                        Ulepsz
                     </div>
                 </div>
             </div>
@@ -144,18 +144,6 @@
         else
         {
             errorMessage = "Nie spełniasz warunków zakupu schematu!";
-        }
-    }
-
-    private async Task UpgradeWarehouse()
-    {
-        if (game.Player.UpgradeWarehouse())
-        {
-            await game.Save();
-        }
-        else
-        {
-            errorMessage = "Za mało środków na ulepszenie magazynu.";
         }
     }
 

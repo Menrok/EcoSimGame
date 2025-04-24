@@ -1,5 +1,4 @@
-﻿@using EcoSimGame.Models
-@using EcoSimGame.Models.Slot
+﻿@using EcoSimGame.Models.Slot
 @inject Services.GameStateService game
 
 @if (IsOpen)
@@ -7,40 +6,36 @@
     <div class="modal-backdrop" @onclick="CloseModal"></div>
 
     <div class="modal">
-        <h3>Zarządzaj magazynem energii</h3>
+        <h3>Zarządzaj magazynem</h3>
 
         <div class="building-cards-row">
             <div class="building-card">
-                <img src="images/energy/magazyn.png" alt="Budowa Magazynu" class="building-image" />
-
+                <img src="images/warehouse/magazyn.png" alt="Budowa Magazynu" class="building-image" />
                 <div class="building-info">
                     <strong>Budowa magazynu</strong><br />
                     Pojemność: @Slot.Capacity<br />
-                    Koszt: @Slot.UpgradeCost zł
+                    Koszt: @Slot.UpgradeCost
                 </div>
-
                 <button @onclick="Build" disabled="@(Slot.IsBuilt || !CanAffordBuild())">Buduj</button>
             </div>
 
             <div class="building-card">
-                <img src="images/energy/ulepszmagazyn.png" alt="Ulepsz Magazyn" class="building-image" />
-
+                <img src="images/warehouse/ulepszmagazyn.png" alt="Ulepsz Magazyn" class="building-image" />
                 <div class="building-info">
                     <strong>Ulepsz magazyn</strong><br />
                     Poziom: @Slot.Level<br />
-                    Nowa pojemność: @(Slot.Capacity + 50)<br />
-                    Koszt: @Slot.UpgradeCost zł
+                    Nowa pojemność: @(Slot.Capacity + 100)<br />
+                    Koszt: @Slot.UpgradeCost
                 </div>
                 <button @onclick="Upgrade" disabled="@(!Slot.IsBuilt || !CanAffordUpgrade())">Ulepsz</button>
             </div>
         </div>
-
     </div>
 }
 
 @code {
     [Parameter] public bool IsOpen { get; set; }
-    [Parameter] public EnergyStorageSlot Slot { get; set; } = new();
+    [Parameter] public WarehouseSlot Slot { get; set; } = new();
     [Parameter] public EventCallback Close { get; set; }
     [Parameter] public EventCallback OnUpgrade { get; set; }
 
@@ -50,7 +45,7 @@
         {
             game.Player.Money -= Slot.UpgradeCost;
             Slot.IsBuilt = true;
-            game.UpdateTotalEnergyStorage();
+            game.Player.UpdateTotalWarehouseCapacity();
             await game.Save();
             await OnUpgrade.InvokeAsync();
         }
@@ -62,7 +57,7 @@
         {
             game.Player.Money -= Slot.UpgradeCost;
             Slot.Upgrade();
-            game.UpdateTotalEnergyStorage();
+            game.Player.UpdateTotalWarehouseCapacity();
             await game.Save();
             await OnUpgrade.InvokeAsync();
         }

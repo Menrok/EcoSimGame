@@ -39,10 +39,11 @@
             <div class="slot energy-storage" @onclick="() => OnEnergyStorageSlotClicked(index)">
                 @if (slot.IsBuilt)
                 {
-                    <div>
-                        <strong>Magazyn energii</strong><br />
-                        Pojemność: @slot.Capacity<br />
-                        Poziom: @slot.Level
+                    <div class="power-plant-slot-content">
+                        <img src="images/energy/magazyn.png" alt="Magazyn energii" class="power-plant-icon" />
+                        <div class="production-info">
+                            Poj: @slot.Capacity<br />
+                        </div>
                     </div>
                 }
                 else
@@ -50,12 +51,25 @@
                     <span>Zbuduj magazyn energii</span>
                 }
             </div>
+
         }
     </div>
 
     <!-- Middle rows -->
     <div class="middle-row">
-        <div class="slot warehouse"><span>magazyn</span></div>
+        <div class="slot warehouse" @onclick="() => OnWarehouseSlotClicked(0)">
+            @if (game.WarehouseSlots.Count > 0 && game.WarehouseSlots[0].IsBuilt)
+            {
+                <div class="power-plant-slot-content">
+                    <img src="images/warehouse/magazyn.png" alt="Magazyn" class="power-plant-icon" />
+                    <div class="production-info">Poj: @game.WarehouseSlots[0].Capacity</div>
+                </div>
+            }
+            else
+            {
+                <span>Zbuduj magazyn</span>
+            }
+        </div>
         <div class="factory-grid">
             <div class="slot factory"><span>fabryka</span></div>
             <div class="slot factory"><span>fabryka</span></div>
@@ -66,11 +80,35 @@
             <div class="slot factory"><span>fabryka</span></div>
             <div class="slot factory"><span>fabryka</span></div>
         </div>
-        <div class="slot warehouse"><span>magazyn</span></div>
+        <div class="slot warehouse" @onclick="() => OnWarehouseSlotClicked(1)">
+            @if (game.WarehouseSlots.Count > 1 && game.WarehouseSlots[1].IsBuilt)
+            {
+                <div class="power-plant-slot-content">
+                    <img src="images/warehouse/magazyn.png" alt="Magazyn" class="power-plant-icon" />
+                    <div class="production-info">Poj: @game.WarehouseSlots[1].Capacity</div>
+                </div>
+            }
+            else
+            {
+                <span>Zbuduj magazyn</span>
+            }
+        </div>
     </div>
 
     <div class="middle-row">
-        <div class="slot warehouse"><span>magazyn</span></div>
+        <div class="slot warehouse" @onclick="() => OnWarehouseSlotClicked(2)">
+            @if (game.WarehouseSlots.Count > 2 && game.WarehouseSlots[2].IsBuilt)
+            {
+                <div class="power-plant-slot-content">
+                    <img src="images/warehouse/magazyn.png" alt="Magazyn" class="power-plant-icon" />
+                    <div class="production-info">Poj: @game.WarehouseSlots[2].Capacity</div>
+                </div>
+            }
+            else
+            {
+                <span>Zbuduj magazyn</span>
+            }
+        </div>
         <div class="factory-grid">
             <div class="slot factory"><span>fabryka</span></div>
             <div class="slot factory"><span>fabryka</span></div>
@@ -81,7 +119,19 @@
             <div class="slot factory"><span>fabryka</span></div>
             <div class="slot factory"><span>fabryka</span></div>
         </div>
-        <div class="slot warehouse"><span>magazyn</span></div>
+        <div class="slot warehouse" @onclick="() => OnWarehouseSlotClicked(3)">
+            @if (game.WarehouseSlots.Count > 3 && game.WarehouseSlots[3].IsBuilt)
+            {
+                <div class="power-plant-slot-content">
+                    <img src="images/warehouse/magazyn.png" alt="Magazyn" class="power-plant-icon" />
+                    <div class="production-info">Poj: @game.WarehouseSlots[3].Capacity</div>
+                </div>
+            }
+            else
+            {
+                <span>Zbuduj magazyn</span>
+            }
+        </div>
     </div>
 </div>
 
@@ -93,6 +143,11 @@
                     Slot="@game.EnergyStorageSlots[selectedEnergyStorageIndex]"
                     Close="CloseModal"
                     OnUpgrade="UpgradeEnergyStorage" />
+<WarehouseModal IsOpen="@isWarehouseModalOpen"
+                Slot="@game.WarehouseSlots[selectedWarehouseIndex]"
+                Close="CloseModal"
+                OnUpgrade="UpgradeWarehouse" />
+
 
 
 @code {
@@ -102,11 +157,17 @@
     private bool isEnergyStorageModalOpen = false;
     private int selectedEnergyStorageIndex;
 
+    private bool isWarehouseModalOpen = false;
+    private int selectedWarehouseIndex;
+
+
     private string? errorMessage;
 
     protected override void OnInitialized()
     {
         game.InitializePowerSlots();
+        game.InitializeEnergyStorageSlots();
+        game.InitializeWarehouseSlots();
         game.OnUpdate += StateHasChanged;
     }
 
@@ -123,6 +184,13 @@
         isEnergyStorageModalOpen = true;
     }
 
+    private void OnWarehouseSlotClicked(int index)
+    {
+        selectedWarehouseIndex = index;
+        isWarehouseModalOpen = true;
+    }
+
+
     private Task CloseEnergyStorageModal()
     {
         isEnergyStorageModalOpen = false;
@@ -135,6 +203,14 @@
         await game.Save();
         StateHasChanged();
     }
+
+    private async Task UpgradeWarehouse()
+    {
+        isWarehouseModalOpen = false;
+        await game.Save();
+        StateHasChanged();
+    }
+
 
     private async Task RefreshPage()
     {
@@ -180,10 +256,8 @@
     {
         isChoosing = false;
         isEnergyStorageModalOpen = false;
+        isWarehouseModalOpen = false;
     }
 
-    public void Dispose()
-    {
-        game.OnUpdate -= StateHasChanged;
-    }
+    public void Dispose() => game.OnUpdate -= StateHasChanged;
 }
