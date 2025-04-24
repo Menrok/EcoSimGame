@@ -1,6 +1,7 @@
 ﻿using Blazored.LocalStorage;
 using EcoSimGame.Models;
 using EcoSimGame.Models.List;
+using EcoSimGame.Models.Slot;
 
 namespace EcoSimGame.Services
 {
@@ -10,6 +11,8 @@ namespace EcoSimGame.Services
         public EnergyStorage Energy => Player.EnergyStorage;
         public List<EnergyProduction> EnergyBuildings { get; private set; } = new();
         public List<PowerPlantSlot> PowerPlantSlots => Player.PowerPlantSlots;
+        public List<EnergyStorageSlot> EnergyStorageSlots => Player.EnergyStorageSlots;
+
         public MarketService Market { get; }
         private readonly ILocalStorageService localStorage;
         private readonly System.Timers.Timer tickTimer;
@@ -43,12 +46,18 @@ namespace EcoSimGame.Services
                 {
                     Player.PowerPlantSlots = Enumerable.Range(0, 5).Select(_ => new PowerPlantSlot()).ToList();
                 }
+
+                if (Player.EnergyStorageSlots == null || Player.EnergyStorageSlots.Count == 0)
+                {
+                    Player.EnergyStorageSlots = Enumerable.Range(0, 2).Select(_ => new EnergyStorageSlot()).ToList();
+                }
             }
             else
             {
                 Player = new Player
                 {
-                    PowerPlantSlots = Enumerable.Range(0, 5).Select(_ => new PowerPlantSlot()).ToList()
+                    PowerPlantSlots = Enumerable.Range(0, 5).Select(_ => new PowerPlantSlot()).ToList(),
+                    EnergyStorageSlots = Enumerable.Range(0, 2).Select(_ => new EnergyStorageSlot()).ToList()
                 };
             }
 
@@ -58,6 +67,7 @@ namespace EcoSimGame.Services
                 .Where(s => s.IsOccupied && s.Building != null)
                 .Sum(s => s.Building.EnergyPerTick);
         }
+
 
         public async Task Save()
         {
@@ -85,7 +95,17 @@ namespace EcoSimGame.Services
                 }
             }
         }
-
+        public void InitializeEnergyStorageSlots()
+        {
+            if (Player.EnergyStorageSlots == null || Player.EnergyStorageSlots.Count == 0)
+            {
+                Player.EnergyStorageSlots = new List<EnergyStorageSlot>();
+                for (int i = 0; i < 2; i++)
+                {
+                    Player.EnergyStorageSlots.Add(new EnergyStorageSlot());
+                }
+            }
+        }
 
         public void SetPowerPlant(int slotIndex, EnergyProduction newPlant)
         {

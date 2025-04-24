@@ -1,4 +1,6 @@
-﻿namespace EcoSimGame.Models;
+﻿using EcoSimGame.Models.Slot;
+
+namespace EcoSimGame.Models;
 
 public class Player
 {
@@ -13,6 +15,7 @@ public class Player
 
     public EnergyStorage EnergyStorage { get; set; } = new();
     public List<PowerPlantSlot> PowerPlantSlots { get; set; } = new();
+    public List<EnergyStorageSlot> EnergyStorageSlots { get; set; } = new();
 
     public DateTime? LastProcessingTime { get; set; }
     public List<string> OwnedSchematics { get; set; }

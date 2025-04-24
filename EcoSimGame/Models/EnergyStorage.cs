@@ -2,11 +2,11 @@
 
 public class EnergyStorage
 {
-    public int MaxEnergy { get; set; } = 100;
-    public int CurrentEnergy { get; set; } = 100;
+    public int MaxEnergy { get; set; } = 0;
+    public int CurrentEnergy { get; set; } = 0;
 
     public int RechargeIntervalMs { get; set; } = 10000;
-    public decimal UpgradeCost { get; set; } = 100;
+    public decimal UpgradeCost { get; set; }
 
     public int GeneratedEnergyPerTick { get; set; } = 0;
 
