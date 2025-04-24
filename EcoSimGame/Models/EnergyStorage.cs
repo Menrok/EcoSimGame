@@ -22,7 +22,7 @@ public class EnergyStorage
 
         if (elapsedMs >= RechargeIntervalMs)
         {
-            int totalGenerated = 1 + GeneratedEnergyPerTick;
+            int totalGenerated = 0 + GeneratedEnergyPerTick;
             CurrentEnergy = Math.Min(MaxEnergy, CurrentEnergy + totalGenerated);
 
             lastRecharge = now;

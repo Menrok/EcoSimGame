@@ -1,0 +1,56 @@
+﻿@using EcoSimGame.Models
+@inject Services.GameStateService game
+
+@if (IsOpen)
+{
+    <div class="modal-backdrop" @onclick="CloseModal"></div>
+
+    <div class="modal">
+        <h3>Wybierz elektrownię</h3>
+
+        <div class="building-cards-row">
+            @foreach (var building in EnergyBuildings)
+            {
+                var imageName = GetImageName(building.Name);
+
+                <div class="building-card">
+                    <img src=@($"images/energy/{imageName}.png") alt="@building.Name" class="building-image" />
+                    <div class="building-info">
+                        <strong>@building.Name</strong><br />
+                        Produkcja: +@building.EnergyPerTick energii<br />
+                        Koszt budowy: @building.Cost
+                    </div>
+                    <button @onclick="() => OnSelectBuilding.InvokeAsync(building)"
+                            disabled="@(!CanAfford(building))">
+                        Buduj
+                    </button>
+                </div>
+            }
+        </div>
+
+        <button class="close-button" @onclick="CloseModal">Anuluj</button>
+    </div>
+}
+
+@code {
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public EventCallback Close { get; set; }
+    [Parameter] public List<EnergyProduction> EnergyBuildings { get; set; } = new();
+    [Parameter] public EventCallback<EnergyProduction> OnSelectBuilding { get; set; }
+
+    private void CloseModal() => Close.InvokeAsync();
+
+    private string GetImageName(string name)
+    {
+        return name.ToLower()
+            .Replace(" ", "")
+            .Replace("ż", "z").Replace("ó", "o").Replace("ł", "l")
+            .Replace("ć", "c").Replace("ś", "s").Replace("ą", "a")
+            .Replace("ę", "e").Replace("ź", "z").Replace("ń", "n");
+    }
+
+    private bool CanAfford(EnergyProduction building)
+    {
+        return game.Player.Money >= building.Cost;
+    }
+}

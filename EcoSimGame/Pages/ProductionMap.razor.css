@@ -8,6 +8,13 @@
     justify-content: center;
 }
 
+.energy-storage-row {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
 .middle-row {
     display: flex;
     gap: 12px;
@@ -26,15 +33,32 @@
     background-color: #e0f7fa;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     font-size: 0.9rem;
-    text-transform: capitalize;
     font-weight: bold;
+    text-transform: capitalize;
     text-align: center;
     white-space: normal;
     word-break: break-word;
 }
 
-.power-plant {
-    /* future styling */
+.power-plant-slot-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 4px;
+    margin-top: 6px;
+}
+
+.power-plant-icon {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+.production-info {
+    font-size: 0.8rem;
+    color: #333;
 }
 
 .warehouse {
@@ -42,7 +66,9 @@
 }
 
 .factory {
-    /* future styling */
+}
+
+.energy-storage {
 }
 
 .factory-grid {
@@ -52,14 +78,10 @@
     gap: 12px;
 }
 
-.energy-storage {
-
-}
-
-.energy-storage-row {
-    display: flex;
-    justify-content: center;
+.power-plant-chooser {
     margin-top: 20px;
-    margin-bottom: 20px;
+    padding: 12px;
+    background: #f4f4f4;
+    border: 1px solid #ccc;
+    border-radius: 8px;
 }
-

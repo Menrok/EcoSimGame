@@ -12,6 +12,7 @@ public class Player
     public int WarehouseUpgradeCost { get; set; } = 200;
 
     public EnergyStorage EnergyStorage { get; set; } = new();
+    public List<PowerPlantSlot> PowerPlantSlots { get; set; } = new();
 
     public DateTime? LastProcessingTime { get; set; }
     public List<string> OwnedSchematics { get; set; }
@@ -19,7 +20,7 @@ public class Player
     public Player()
     {
         Name = "Nazwa";
-        Money = 1000.0m;
+        Money = 10000.0m;
         Level = 1;
         Experience = 0;
         Inventory = new Inventory();

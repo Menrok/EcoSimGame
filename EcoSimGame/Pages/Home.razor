@@ -20,13 +20,19 @@
     private string playerName = "";
     private bool isNameEntered = false;
 
-    private void ConfirmName()
+    private async Task ConfirmName()
     {
         if (!string.IsNullOrWhiteSpace(playerName))
         {
             game.Player.Name = playerName;
+            await game.Save();
             isNameEntered = true;
         }
+    }
+
+    protected override void OnInitialized()
+    {
+        playerName = game.Player.Name;
     }
 
     private void StartGame()

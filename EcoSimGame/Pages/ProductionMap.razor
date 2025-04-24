@@ -1,13 +1,33 @@
 ﻿@page "/productionmap"
+@using EcoSimGame.Models
+@using EcoSimGame.Models.List
+@using EcoSimGame.Components
+
+@inject Services.GameStateService game
 
 <div class="production-map">
-    <!-- Top row: Power plants -->
     <div class="top-row">
-        <div class="slot power-plant"><span>elektrownia</span></div>
-        <div class="slot power-plant"><span>elektrownia</span></div>
-        <div class="slot power-plant"><span>elektrownia</span></div>
-        <div class="slot power-plant"><span>elektrownia</span></div>
-        <div class="slot power-plant"><span>elektrownia</span></div>
+        @for (int i = 0; i < game.PowerPlantSlots.Count; i++)
+        {
+            var index = i;
+            var slot = game.PowerPlantSlots[index];
+
+            <div class="slot power-plant" @onclick="@(() => OnPowerPlantSlotClicked(index))">
+                @if (slot.IsOccupied && slot.Building is not null)
+                {
+                    var imageName = GetImageName(slot.Building.Name);
+
+                    <div class="power-plant-slot-content">
+                        <img src=@($"images/energy/{imageName}.png") alt="@slot.Building.Name" class="power-plant-icon" />
+                        <div class="production-info">+@slot.Building.EnergyPerTick energii</div>
+                    </div>
+                }
+                else
+                {
+                    <span>Zbuduj elektrownie</span>
+                }
+            </div>
+        }
     </div>
 
     <!-- Energy storage slot -->
@@ -46,3 +66,73 @@
         <div class="slot warehouse"><span>magazyn</span></div>
     </div>
 </div>
+
+<EnergyPurchaseModal IsOpen="@isChoosing"
+                     EnergyBuildings="@EnergyProductionList.AllBuildings"
+                     OnSelectBuilding="ConfirmBuild"
+                     Close="CloseModal" />
+
+
+@code {
+    private bool isChoosing = false;
+    private int selectedSlotIndex;
+    private string? errorMessage;
+
+    protected override void OnInitialized()
+    {
+        game.InitializePowerSlots();
+        game.OnUpdate += StateHasChanged;
+    }
+
+    private void OnPowerPlantSlotClicked(int index)
+    {
+        selectedSlotIndex = index;
+        isChoosing = true;
+        StateHasChanged();
+    }
+
+
+    private async Task ConfirmBuild(EnergyProduction building)
+    {
+        var i = selectedSlotIndex;
+
+        if (i < 0 || i >= game.PowerPlantSlots.Count)
+        {
+            errorMessage = "Nieprawidłowy slot!";
+            return;
+        }
+
+        if (game.Player.Money >= building.Cost)
+        {
+            game.Player.Money -= building.Cost;
+
+            game.SetPowerPlant(i, building);
+
+            await game.Save();
+            isChoosing = false;
+        }
+        else
+        {
+            errorMessage = "Za mało pieniędzy!";
+        }
+    }
+
+    private string GetImageName(string name)
+    {
+        return name.ToLower()
+            .Replace(" ", "")
+            .Replace("ż", "z").Replace("ó", "o").Replace("ł", "l")
+            .Replace("ć", "c").Replace("ś", "s").Replace("ą", "a")
+            .Replace("ę", "e").Replace("ź", "z").Replace("ń", "n");
+    }
+
+    private void CloseModal()
+    {
+        isChoosing = false;
+    }
+
+    public void Dispose()
+    {
+        game.OnUpdate -= StateHasChanged;
+    }
+}
