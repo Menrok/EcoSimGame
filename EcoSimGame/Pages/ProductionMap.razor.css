@@ -1,0 +1,65 @@
+﻿.production-map {
+    padding: 16px;
+}
+
+.top-row {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.middle-row {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 24px;
+}
+
+.slot {
+    width: 100px;
+    height: 100px;
+    border: 2px solid #333;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #e0f7fa;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    font-size: 0.9rem;
+    text-transform: capitalize;
+    font-weight: bold;
+    text-align: center;
+    white-space: normal;
+    word-break: break-word;
+}
+
+.power-plant {
+    /* future styling */
+}
+
+.warehouse {
+    align-self: center;
+}
+
+.factory {
+    /* future styling */
+}
+
+.factory-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 100px);
+    grid-template-rows: repeat(2, 100px);
+    gap: 12px;
+}
+
+.energy-storage {
+
+}
+
+.energy-storage-row {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
