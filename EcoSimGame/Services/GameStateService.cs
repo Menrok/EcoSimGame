@@ -13,6 +13,7 @@ namespace EcoSimGame.Services
         public List<PowerPlantSlot> PowerPlantSlots => Player.PowerPlantSlots;
         public List<EnergyStorageSlot> EnergyStorageSlots => Player.EnergyStorageSlots;
         public List<WarehouseSlot> WarehouseSlots => Player.WarehouseSlots;
+        public List<FactorySlot> FactorySlots => Player.FactorySlots;
 
 
         public MarketService Market { get; }
@@ -34,6 +35,7 @@ namespace EcoSimGame.Services
         private void Tick()
         {
             Energy.Recharge();
+            UpdateFactories();
             OnUpdate?.Invoke();
         }
 
@@ -59,6 +61,10 @@ namespace EcoSimGame.Services
                     Player.WarehouseSlots = Enumerable.Range(0, 4).Select(_ => new WarehouseSlot()).ToList();
                 }
 
+                if (Player.FactorySlots == null || Player.FactorySlots.Count == 0)
+                {
+                    Player.FactorySlots = Enumerable.Range(0, 16).Select(_ => new FactorySlot()).ToList();
+                }
             }
             else
             {
@@ -129,7 +135,17 @@ namespace EcoSimGame.Services
                 }
             }
         }
-
+        public void InitializeFactorySlots()
+        {
+            if (Player.FactorySlots == null || Player.FactorySlots.Count == 0)
+            {
+                Player.FactorySlots = new List<FactorySlot>();
+                for (int i = 0; i < 16; i++)
+                {
+                    Player.FactorySlots.Add(new FactorySlot());
+                }
+            }
+        }
 
         public void SetPowerPlant(int slotIndex, EnergyProduction newPlant)
         {
@@ -158,5 +174,12 @@ namespace EcoSimGame.Services
             OnUpdate?.Invoke();
         }
 
+        private void UpdateFactories()
+        {
+            foreach (var factory in Player.FactorySlots)
+            {
+                factory.Update(Player);
+            }
+        }
     }
 }

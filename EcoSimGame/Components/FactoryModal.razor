@@ -1,0 +1,126 @@
+﻿@using EcoSimGame.Models
+@using EcoSimGame.Models.Slot
+@using EcoSimGame.Models.List
+@inject Services.GameStateService game
+
+@if (IsOpen)
+{
+    <div class="modal-backdrop" @onclick="CloseModal"></div>
+
+    <div class="modal">
+        <h3>Zarządzaj Fabryką</h3>
+
+        @if (!Slot.IsBuilt)
+        {
+            <div class="building-cards-row">
+                @foreach (var factory in FactoryList.AllFactories)
+                {
+                    var imageName = GetImageName(factory.Name);
+
+                    <div class="building-card">
+                        <img src=@($"images/factory/{imageName}.png") alt="@factory.Name" class="building-image" />                        
+                        <div class="building-info">
+                            <strong>@factory.Name</strong><br />
+                            @factory.Description<br />
+                            Koszt: @factory.BuildCost
+                        </div>
+                        <button @onclick="() => BuildFactory(factory)" disabled="@(!CanAfford(factory))">Buduj</button>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="building-cards-row">
+                <div class="building-card">
+                    <img src="images/factory/production.png" alt="Ustaw Produkcję" class="building-image" />
+                    <div class="building-info">
+                        <strong>Wybierz produkcję</strong><br />
+                        Aktualnie: @(string.IsNullOrEmpty(Slot.SelectedProduction) ? "Brak" : Slot.SelectedProduction)
+                    </div>
+                    <select @bind="selectedProduction">
+                        <option disabled selected value>-- wybierz --</option>
+                        @foreach (var item in availableProductions)
+                        {
+                            <option value="@item">@item</option>
+                        }
+                    </select>
+                    <button @onclick="ConfirmProduction" disabled="@string.IsNullOrEmpty(selectedProduction)">Ustaw</button>
+                </div>
+
+                <div class="building-card">
+                    <img src="images/factory/upgrade.png" alt="Ulepsz Fabrykę" class="building-image" />
+                    <div class="building-info">
+                        <strong>Ulepsz fabrykę</strong><br />
+                        Poziom: @Slot.Level<br />
+                        Koszt: @Slot.UpgradeCost
+                    </div>
+                    <button @onclick="UpgradeFactory" disabled="@(!CanAfford(Slot.UpgradeCost))">Ulepsz</button>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public FactorySlot Slot { get; set; } = new();
+    [Parameter] public EventCallback Close { get; set; }
+    [Parameter] public EventCallback OnUpgrade { get; set; }
+
+    private string selectedProduction = string.Empty;
+    private List<string> availableProductions = new();
+
+    protected override void OnParametersSet()
+    {
+        if (Slot.GetFactory() != null)
+        {
+            availableProductions = Slot.GetFactory()!.Productions;
+        }
+    }
+
+    private async Task BuildFactory(Factory factory)
+    {
+        if (game.Player.Money >= factory.BuildCost)
+        {
+            game.Player.Money -= factory.BuildCost;
+            Slot.IsBuilt = true;
+            Slot.SelectedFactoryName = factory.Name;
+            availableProductions = factory.Productions;
+            await game.Save();
+            await OnUpgrade.InvokeAsync();
+        }
+    }
+
+    private async Task ConfirmProduction()
+    {
+        Slot.SelectedProduction = selectedProduction;
+        await game.Save();
+        await OnUpgrade.InvokeAsync();
+    }
+
+    private async Task UpgradeFactory()
+    {
+        if (game.Player.Money >= Slot.UpgradeCost)
+        {
+            game.Player.Money -= Slot.UpgradeCost;
+            Slot.Upgrade();
+            await game.Save();
+            await OnUpgrade.InvokeAsync();
+        }
+    }
+
+    private string GetImageName(string name)
+    {
+        return name.ToLower()
+            .Replace(" ", "")
+            .Replace("ż", "z").Replace("ó", "o").Replace("ł", "l")
+            .Replace("ć", "c").Replace("ś", "s").Replace("ą", "a")
+            .Replace("ę", "e").Replace("ź", "z").Replace("ń", "n");
+    }
+
+    private bool CanAfford(Factory factory) => game.Player.Money >= factory.BuildCost;
+    private bool CanAfford(decimal cost) => game.Player.Money >= cost;
+
+    private void CloseModal() => Close.InvokeAsync();
+}

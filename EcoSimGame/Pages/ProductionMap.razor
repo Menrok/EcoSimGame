@@ -55,7 +55,6 @@
         }
     </div>
 
-    <!-- Middle rows -->
     <div class="middle-row">
         <div class="slot warehouse" @onclick="() => OnWarehouseSlotClicked(0)">
             @if (game.WarehouseSlots.Count > 0 && game.WarehouseSlots[0].IsBuilt)
@@ -71,14 +70,31 @@
             }
         </div>
         <div class="factory-grid">
-            <div class="slot factory"><span>fabryka</span></div>
-            <div class="slot factory"><span>fabryka</span></div>
-            <div class="slot factory"><span>fabryka</span></div>
-            <div class="slot factory"><span>fabryka</span></div>
-            <div class="slot factory"><span>fabryka</span></div>
-            <div class="slot factory"><span>fabryka</span></div>
-            <div class="slot factory"><span>fabryka</span></div>
-            <div class="slot factory"><span>fabryka</span></div>
+            @for (int i = 0; i < game.FactorySlots.Count / 2; i++)
+            {
+                var index = i;
+                var slot = game.FactorySlots[index];
+
+                <div class="slot factory" @onclick="@(() => OnFactorySlotClicked(index))">
+                    @if (slot.IsBuilt && slot.GetFactory() is not null)
+                    {
+                        var imageName = GetImageName(slot.SelectedFactoryName ?? "fabryka");
+
+                        <div class="power-plant-slot-content">
+                            <img src=@($"images/factory/{imageName}.png") alt="@slot.SelectedFactoryName" class="power-plant-icon" />
+                            <div class="production-info">
+                                @(string.IsNullOrEmpty(slot.SelectedProduction)
+                                    ? "Brak produkcji"
+                                    : slot.SelectedProduction)
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <span>Zbuduj fabrykę</span>
+                    }
+                </div>
+            }
         </div>
         <div class="slot warehouse" @onclick="() => OnWarehouseSlotClicked(1)">
             @if (game.WarehouseSlots.Count > 1 && game.WarehouseSlots[1].IsBuilt)
@@ -110,14 +126,29 @@
             }
         </div>
         <div class="factory-grid">
-            <div class="slot factory"><span>fabryka</span></div>
-            <div class="slot factory"><span>fabryka</span></div>
-            <div class="slot factory"><span>fabryka</span></div>
-            <div class="slot factory"><span>fabryka</span></div>
-            <div class="slot factory"><span>fabryka</span></div>
-            <div class="slot factory"><span>fabryka</span></div>
-            <div class="slot factory"><span>fabryka</span></div>
-            <div class="slot factory"><span>fabryka</span></div>
+            @for (int i = game.FactorySlots.Count / 2; i < game.FactorySlots.Count; i++)
+            {
+                var index = i;
+                var slot = game.FactorySlots[index];
+
+                <div class="slot factory" @onclick="() => OnFactorySlotClicked(index)">
+                    @if (slot.IsBuilt && slot.GetFactory() is not null)
+                    {
+                        var imageName = GetImageName(slot.SelectedFactoryName ?? "fabryka");
+
+                        <div class="power-plant-slot-content">
+                            <img src=@($"images/factory/{imageName}.png") alt="@slot.SelectedFactoryName" class="power-plant-icon" />
+                            <div class="production-info">
+                                @(string.IsNullOrEmpty(slot.SelectedProduction) ? "Brak produkcji" : slot.SelectedProduction)
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <span>Zbuduj fabrykę</span>
+                    }
+                </div>
+            }
         </div>
         <div class="slot warehouse" @onclick="() => OnWarehouseSlotClicked(3)">
             @if (game.WarehouseSlots.Count > 3 && game.WarehouseSlots[3].IsBuilt)
@@ -147,6 +178,10 @@
                 Slot="@game.WarehouseSlots[selectedWarehouseIndex]"
                 Close="CloseModal"
                 OnUpgrade="UpgradeWarehouse" />
+<FactoryModal IsOpen="@isFactoryModalOpen"
+              Slot="@game.FactorySlots[selectedFactoryIndex]"
+              Close="CloseModal"
+              OnUpgrade="UpgradeFactory" />
 
 
 
@@ -160,6 +195,8 @@
     private bool isWarehouseModalOpen = false;
     private int selectedWarehouseIndex;
 
+    private bool isFactoryModalOpen = false;
+    private int selectedFactoryIndex;
 
     private string? errorMessage;
 
@@ -168,6 +205,7 @@
         game.InitializePowerSlots();
         game.InitializeEnergyStorageSlots();
         game.InitializeWarehouseSlots();
+        game.InitializeFactorySlots();
         game.OnUpdate += StateHasChanged;
     }
 
@@ -190,6 +228,11 @@
         isWarehouseModalOpen = true;
     }
 
+    private void OnFactorySlotClicked(int index)
+    {
+        selectedFactoryIndex = index;
+        isFactoryModalOpen = true;
+    }
 
     private Task CloseEnergyStorageModal()
     {
@@ -211,6 +254,12 @@
         StateHasChanged();
     }
 
+    private async Task UpgradeFactory()
+    {
+        isFactoryModalOpen = false;
+        await game.Save();
+        StateHasChanged();
+    }
 
     private async Task RefreshPage()
     {
@@ -257,6 +306,7 @@
         isChoosing = false;
         isEnergyStorageModalOpen = false;
         isWarehouseModalOpen = false;
+        isFactoryModalOpen = false;
     }
 
     public void Dispose() => game.OnUpdate -= StateHasChanged;

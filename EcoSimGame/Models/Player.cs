@@ -16,7 +16,7 @@ public class Player
     public List<PowerPlantSlot> PowerPlantSlots { get; set; } = new();
     public List<EnergyStorageSlot> EnergyStorageSlots { get; set; } = new();
     public List<WarehouseSlot> WarehouseSlots { get; set; } = new();
-
+    public List<FactorySlot> FactorySlots { get; set; } = new();
 
     public DateTime? LastProcessingTime { get; set; }
     public List<string> OwnedSchematics { get; set; }

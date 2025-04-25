@@ -1,7 +1,6 @@
 ﻿@inherits LayoutComponentBase
 @implements IDisposable
 @inject ILocalStorageService localStorage
-@inject Services.ProductionService production
 @inject Services.GameStateService game
 @inject Services.MarketService market
 @using Blazored.LocalStorage
@@ -57,16 +56,11 @@
         await market.InitializeAsync();
         await game.Load();
 
-        production.PlayerRef = game.Player;
-        production.LocalStorageRef = localStorage;
-
         game.OnUpdate += StateHasChanged;
-        production.OnUpdate += StateHasChanged;
     }
 
     public void Dispose()
     {
         game.OnUpdate -= StateHasChanged;
-        production.OnUpdate -= StateHasChanged;
     }
 }

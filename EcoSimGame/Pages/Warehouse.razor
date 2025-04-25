@@ -1,58 +1,31 @@
 ﻿@page "/Warehouse"
 @using EcoSimGame.Models
+@using EcoSimGame.Models.List
 @inject Services.GameStateService game
 
 <p><strong>Pojemność magazynu:</strong> @game.Player.GetCurrentInventorySize() / @game.Player.WarehouseCapacity</p>
-
 <progress class="inventory-bar" max="@game.Player.WarehouseCapacity" value="@game.Player.GetCurrentInventorySize()"></progress>
 
 @if (game.Player.Inventory.GetAllWithQuantity().Count > 0)
 {
     <div class="warehouse-columns">
-        <div class="warehouse-column">
-            <h4>Materiały</h4>
-            @foreach (var name in new[] { "Drewno", "Ruda żelaza", "Glina", "Len" })
-            {
-                var quantity = game.Player.Inventory.GetQuantity(name);
-                if (quantity > 0)
+        @foreach (var group in inventoryGroups)
+        {
+            <div class="warehouse-column">
+                <h4>@group.Key</h4>
+                @foreach (var name in group.Value)
                 {
-                    <div class="material-row">
-                        <img src=@($"images/materials/{GetImageName(name)}.png") alt="@name" class="material-icon" />
-                        <span><strong>@name:</strong> @quantity sztuk</span>
-                    </div>
+                    var quantity = game.Player.Inventory.GetQuantity(name);
+                    if (quantity > 0)
+                    {
+                        <div class="material-row">
+                            <img src=@($"images/materials/{GetImageName(name)}.png") alt="@name" class="material-icon" />
+                            <span><strong>@name:</strong> @quantity sztuk</span>
+                        </div>
+                    }
                 }
-            }
-        </div>
-
-        <div class="warehouse-column">
-            <h4>Surowce przetworzone</h4>
-            @foreach (var name in new[] { "Deski", "Sztabka żelaza", "Cegła", "Płótno" })
-            {
-                var quantity = game.Player.Inventory.GetQuantity(name);
-                if (quantity > 0)
-                {
-                    <div class="material-row">
-                        <img src=@($"images/materials/{GetImageName(name)}.png") alt="@name" class="material-icon" />
-                        <span><strong>@name:</strong> @quantity sztuk</span>
-                    </div>
-                }
-            }
-        </div>
-
-        <div class="warehouse-column">
-            <h4>Produkty</h4>
-            @foreach (var name in new[] { "Narzędzia", "Odzież" })
-            {
-                var quantity = game.Player.Inventory.GetQuantity(name);
-                if (quantity > 0)
-                {
-                    <div class="material-row">
-                        <img src=@($"images/materials/{GetImageName(name)}.png") alt="@name" class="material-icon" />
-                        <span><strong>@name:</strong> @quantity sztuk</span>
-                    </div>
-                }
-            }
-        </div>
+            </div>
+        }
     </div>
 }
 else
@@ -61,6 +34,31 @@ else
 }
 
 @code {
+    private readonly Dictionary<string, List<string>> inventoryGroups = new()
+        {
+            ["Surowce"] = new()
+        {
+            "Ruda żelaza", "Ruda miedzi", "Ruda krzemu", "Ruda litu", "Ropa naftowa", "Włókno węglowe"
+        },
+            ["Materiały przetworzone"] = new()
+        {
+            "Sztabka żelaza", "Sztabka miedzi", "Sztabka krzemu", "Sztabka litu", "Plastik", "Kompozyt węglowy"
+        },
+            ["Produkty"] = new()
+        {
+            "Silnik główny", "Komora spalania", "Płyta główna", "Moduł pamięci",
+            "Stal konstrukcyjna", "Powłoka antykorozyjna", "Panel kompozytowy", "Stelaż wewnętrzny"
+        },
+            ["Komponenty"] = new()
+        {
+            "Napęd rakietowy", "Komputer pokładowy", "Zbiornik paliwa", "Kadłub rakiety"
+        },
+            ["Produkt końcowy"] = new()
+        {
+            "Rakieta kosmiczna"
+        }
+        };
+
     protected override void OnInitialized()
     {
         game.OnUpdate += StateHasChanged;

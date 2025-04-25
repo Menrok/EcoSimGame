@@ -17,33 +17,7 @@
     {
         <div class="infrastructure-container infrastructure-container-full">
             <div class="building-cards-row">
-                @foreach (var node in productionTree.Nodes)
-                {
-                    var imageName = GetImageName(node.Name);
 
-                    <div class="building-card">
-                        <img src=@($"images/materials/{imageName}.png") alt="@node.Name" class="production-image" />
-
-                        <div class="building-info">
-                            <strong>@node.Name</strong><br />
-                            Wymagany poziom: @node.RequiredLevel<br />
-                            Cena: @node.CostMoney zł
-                        </div>
-
-                        @if (game.Player.HasSchematic(node.Name))
-                        {
-                            <span class="owned">(Schemat posiadasz)</span>
-                        }
-                        else if (game.Player.Level >= node.RequiredLevel)
-                        {
-                            <button @onclick="() => TryBuySchematic(node)">Kup schemat</button>
-                        }
-                        else
-                        {
-                            <span class="locked">(Osiągnij poziom @node.RequiredLevel)</span>
-                        }
-                    </div>
-                }
             </div>
         </div>
 
@@ -117,13 +91,11 @@
 }
 
 @code {
-    private ProductionTree productionTree = new();
     private string activeTab = "tree";
     private string? errorMessage;
 
     protected override void OnInitialized()
     {
-        productionTree = new ProductionTree();
         game.OnUpdate += StateHasChanged;
     }
 
@@ -131,20 +103,6 @@
     {
         activeTab = tab;
         errorMessage = null;
-    }
-
-    private async Task TryBuySchematic(ProductionNode node)
-    {
-        errorMessage = null;
-
-        if (game.Player.TryBuySchematic(node.Name, node.RequiredLevel, node.CostMoney))
-        {
-            await game.Save();
-        }
-        else
-        {
-            errorMessage = "Nie spełniasz warunków zakupu schematu!";
-        }
     }
 
     private async Task UpgradeEnergy()

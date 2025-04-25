@@ -1,5 +1,4 @@
 ﻿using Blazored.LocalStorage;
-using EcoSimGame.Models.List;
 
 namespace EcoSimGame.Services;
 

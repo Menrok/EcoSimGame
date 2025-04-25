@@ -11,7 +11,6 @@ builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddScoped<Player>();
 builder.Services.AddScoped<GameStateService>();
 builder.Services.AddScoped<MarketService>();
-builder.Services.AddSingleton<ProductionService>();
 
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
