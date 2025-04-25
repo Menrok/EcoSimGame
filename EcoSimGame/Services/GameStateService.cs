@@ -15,7 +15,6 @@ namespace EcoSimGame.Services
         public List<WarehouseSlot> WarehouseSlots => Player.WarehouseSlots;
         public List<FactorySlot> FactorySlots => Player.FactorySlots;
 
-
         public MarketService Market { get; }
         private readonly ILocalStorageService localStorage;
         private readonly System.Timers.Timer tickTimer;
@@ -72,7 +71,8 @@ namespace EcoSimGame.Services
                 {
                     PowerPlantSlots = Enumerable.Range(0, 5).Select(_ => new PowerPlantSlot()).ToList(),
                     EnergyStorageSlots = Enumerable.Range(0, 2).Select(_ => new EnergyStorageSlot()).ToList(),
-                    WarehouseSlots = Enumerable.Range(0, 4).Select(_ => new WarehouseSlot()).ToList()
+                    WarehouseSlots = Enumerable.Range(0, 4).Select(_ => new WarehouseSlot()).ToList(),
+                    FactorySlots = Enumerable.Range(0, 16).Select(_ => new FactorySlot()).ToList()
                 };
             }
 
@@ -81,7 +81,6 @@ namespace EcoSimGame.Services
             Player.EnergyStorage.GeneratedEnergyPerTick = Player.PowerPlantSlots
                 .Where(s => s.Building != null)
                 .Sum(s => s.Building!.EnergyPerTick);
-
 
             UpdateTotalEnergyStorage();
         }
@@ -105,9 +104,7 @@ namespace EcoSimGame.Services
             {
                 Player.PowerPlantSlots!.Clear();
                 for (int i = 0; i < 5; i++)
-                {
                     Player.PowerPlantSlots.Add(new PowerPlantSlot());
-                }
             }
         }
         public void InitializeEnergyStorageSlots()
@@ -116,9 +113,7 @@ namespace EcoSimGame.Services
             {
                 Player.EnergyStorageSlots = new List<EnergyStorageSlot>();
                 for (int i = 0; i < 2; i++)
-                {
                     Player.EnergyStorageSlots.Add(new EnergyStorageSlot());
-                }
             }
         }
 
@@ -128,9 +123,7 @@ namespace EcoSimGame.Services
             {
                 Player.WarehouseSlots = new List<WarehouseSlot>();
                 for (int i = 0; i < 4; i++)
-                {
                     Player.WarehouseSlots.Add(new WarehouseSlot());
-                }
             }
         }
         public void InitializeFactorySlots()
@@ -139,9 +132,7 @@ namespace EcoSimGame.Services
             {
                 Player.FactorySlots = new List<FactorySlot>();
                 for (int i = 0; i < 16; i++)
-                {
                     Player.FactorySlots.Add(new FactorySlot());
-                }
             }
         }
 
@@ -153,9 +144,7 @@ namespace EcoSimGame.Services
             var slot = PowerPlantSlots[slotIndex];
 
             if (slot.IsOccupied && slot.Building != null)
-            {
                 Player.EnergyStorage.GeneratedEnergyPerTick -= slot.Building.EnergyPerTick;
-            }
 
             slot.Building = newPlant;
             slot.IsOccupied = true;

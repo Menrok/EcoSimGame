@@ -2,17 +2,20 @@
 @using EcoSimGame.Components
 @using EcoSimGame.Models
 @using EcoSimGame.Models.Energy
+@using EcoSimGame.Models.Slot
 
 @inject Services.GameStateService game
 
-<div class="production-map">
-    <div class="top-row">
+<div class="production-map-container" @ref="mapContainerRef" @onmousedown="StartDrag" @onmouseup="StopDrag" @onmousemove="OnDrag">
+    <div class="production-map" @ref="mapRef" style="@mapStyle">
+
         @for (int i = 0; i < game.PowerPlantSlots.Count; i++)
         {
             var index = i;
             var slot = game.PowerPlantSlots[index];
+            var pos = PowerPlantSlotPositions[index];
 
-            <div class="slot power-plant" @onclick="@(() => OnPowerPlantSlotClicked(index))">
+            <div class="slot power-plant" style="left:@($"{pos.X}px"); top:@($"{pos.Y}px");" @onclick="@(() => OnPowerPlantSlotClicked(index))">
                 @if (slot.IsOccupied && slot.Building is not null)
                 {
                     var imageName = GetImageName(slot.Building.Name);
@@ -24,26 +27,23 @@
                 }
                 else
                 {
-                    <span>Zbuduj elektrownie</span>
+                    <span>Zbuduj elektrownię</span>
                 }
             </div>
         }
-    </div>
 
-    <div class="energy-storage-row">
         @for (int i = 0; i < game.EnergyStorageSlots.Count; i++)
         {
             var index = i;
             var slot = game.EnergyStorageSlots[index];
+            var pos = EnergyStorageSlotPositions[index];
 
-            <div class="slot energy-storage" @onclick="() => OnEnergyStorageSlotClicked(index)">
+            <div class="slot energy-storage" style="left:@($"{pos.X}px"); top:@($"{pos.Y}px");" @onclick="@(() => OnEnergyStorageSlotClicked(index))">
                 @if (slot.IsBuilt)
                 {
                     <div class="power-plant-slot-content">
                         <img src="images/energy/magazyn.png" alt="Magazyn energii" class="power-plant-icon" />
-                        <div class="production-info">
-                            Poj: @slot.Capacity<br />
-                        </div>
+                        <div class="production-info">Poj: @slot.Capacity</div>
                     </div>
                 }
                 else
@@ -51,118 +51,54 @@
                     <span>Zbuduj magazyn energii</span>
                 }
             </div>
-
         }
-    </div>
 
-    <div class="middle-row">
-        <div class="slot warehouse" @onclick="() => OnWarehouseSlotClicked(0)">
-            @if (game.WarehouseSlots.Count > 0 && game.WarehouseSlots[0].IsBuilt)
-            {
-                <div class="power-plant-slot-content">
-                    <img src="images/warehouse/magazyn.png" alt="Magazyn" class="power-plant-icon" />
-                    <div class="production-info">Poj: @game.WarehouseSlots[0].Capacity</div>
-                </div>
-            }
-            else
-            {
-                <span>Zbuduj magazyn</span>
-            }
-        </div>
-        <div class="factory-grid">
-            @for (int i = 0; i < game.FactorySlots.Count / 2; i++)
-            {
-                var index = i;
-                var slot = game.FactorySlots[index];
+        @for (int i = 0; i < game.WarehouseSlots.Count; i++)
+        {
+            var index = i;
+            var slot = game.WarehouseSlots[index];
+            var pos = WarehouseSlotPositions[index];
 
-                <div class="slot factory" @onclick="@(() => OnFactorySlotClicked(index))">
-                    @if (slot.IsBuilt && slot.GetFactory() is not null)
-                    {
-                        var imageName = GetImageName(slot.SelectedFactoryName ?? "fabryka");
+            <div class="slot warehouse" style="left:@($"{pos.X}px"); top:@($"{pos.Y}px");" @onclick="@(() => OnWarehouseSlotClicked(index))">
+                @if (slot.IsBuilt)
+                {
+                    <div class="power-plant-slot-content">
+                        <img src="images/warehouse/magazyn.png" alt="Magazyn" class="power-plant-icon" />
+                        <div class="production-info">Poj: @slot.Capacity</div>
+                    </div>
+                }
+                else
+                {
+                    <span>Zbuduj magazyn</span>
+                }
+            </div>
+        }
 
-                        <div class="power-plant-slot-content">
-                            <img src=@($"images/factory/{imageName}.png") alt="@slot.SelectedFactoryName" class="power-plant-icon" />
-                            <div class="production-info">
-                                @(string.IsNullOrEmpty(slot.SelectedProduction)
-                                    ? "Brak produkcji"
-                                    : slot.SelectedProduction)
-                            </div>
+        @for (int i = 0; i < Math.Min(game.FactorySlots.Count, FactorySlotPositions.Count); i++)
+        {
+            var index = i;
+            var slot = game.FactorySlots[index];
+            var pos = FactorySlotPositions[index];
+
+            <div class="slot factory" style="left:@($"{pos.X}px"); top:@($"{pos.Y}px");" @onclick="@(() => OnFactorySlotClicked(index))">
+                @if (slot.IsBuilt && slot.GetFactory() is not null)
+                {
+                    var imageName = GetImageName(slot.SelectedFactoryName ?? "fabryka");
+
+                    <div class="power-plant-slot-content">
+                        <img src=@($"images/factory/{imageName}.png") alt="@slot.SelectedFactoryName" class="power-plant-icon" />
+                        <div class="production-info">
+                            @(string.IsNullOrEmpty(slot.SelectedProduction) ? "Brak produkcji" : slot.SelectedProduction)
                         </div>
-                    }
-                    else
-                    {
-                        <span>Zbuduj fabrykę</span>
-                    }
-                </div>
-            }
-        </div>
-        <div class="slot warehouse" @onclick="() => OnWarehouseSlotClicked(1)">
-            @if (game.WarehouseSlots.Count > 1 && game.WarehouseSlots[1].IsBuilt)
-            {
-                <div class="power-plant-slot-content">
-                    <img src="images/warehouse/magazyn.png" alt="Magazyn" class="power-plant-icon" />
-                    <div class="production-info">Poj: @game.WarehouseSlots[1].Capacity</div>
-                </div>
-            }
-            else
-            {
-                <span>Zbuduj magazyn</span>
-            }
-        </div>
-    </div>
+                    </div>
+                }
+                else
+                {
+                    <span>Zbuduj fabrykę</span>
+                }
+            </div>
+        }
 
-    <div class="middle-row">
-        <div class="slot warehouse" @onclick="() => OnWarehouseSlotClicked(2)">
-            @if (game.WarehouseSlots.Count > 2 && game.WarehouseSlots[2].IsBuilt)
-            {
-                <div class="power-plant-slot-content">
-                    <img src="images/warehouse/magazyn.png" alt="Magazyn" class="power-plant-icon" />
-                    <div class="production-info">Poj: @game.WarehouseSlots[2].Capacity</div>
-                </div>
-            }
-            else
-            {
-                <span>Zbuduj magazyn</span>
-            }
-        </div>
-        <div class="factory-grid">
-            @for (int i = game.FactorySlots.Count / 2; i < game.FactorySlots.Count; i++)
-            {
-                var index = i;
-                var slot = game.FactorySlots[index];
-
-                <div class="slot factory" @onclick="() => OnFactorySlotClicked(index)">
-                    @if (slot.IsBuilt && slot.GetFactory() is not null)
-                    {
-                        var imageName = GetImageName(slot.SelectedFactoryName ?? "fabryka");
-
-                        <div class="power-plant-slot-content">
-                            <img src=@($"images/factory/{imageName}.png") alt="@slot.SelectedFactoryName" class="power-plant-icon" />
-                            <div class="production-info">
-                                @(string.IsNullOrEmpty(slot.SelectedProduction) ? "Brak produkcji" : slot.SelectedProduction)
-                            </div>
-                        </div>
-                    }
-                    else
-                    {
-                        <span>Zbuduj fabrykę</span>
-                    }
-                </div>
-            }
-        </div>
-        <div class="slot warehouse" @onclick="() => OnWarehouseSlotClicked(3)">
-            @if (game.WarehouseSlots.Count > 3 && game.WarehouseSlots[3].IsBuilt)
-            {
-                <div class="power-plant-slot-content">
-                    <img src="images/warehouse/magazyn.png" alt="Magazyn" class="power-plant-icon" />
-                    <div class="production-info">Poj: @game.WarehouseSlots[3].Capacity</div>
-                </div>
-            }
-            else
-            {
-                <span>Zbuduj magazyn</span>
-            }
-        </div>
     </div>
 </div>
 
@@ -178,11 +114,16 @@
                 Slot="@game.WarehouseSlots[selectedWarehouseIndex]"
                 Close="CloseModal"
                 OnUpgrade="UpgradeWarehouse" />
-<FactoryModal IsOpen="@isFactoryModalOpen"
-              Slot="@game.FactorySlots[selectedFactoryIndex]"
-              Close="CloseModal"
-              OnUpgrade="UpgradeFactory"
-              CloseAfterBuild="@ShouldCloseAfterBuild()" />
+<FactoryBuildModal IsOpen="@isFactoryBuildModalOpen"
+                   Slot="@game.FactorySlots[selectedFactoryIndex]"
+                   Close="CloseModal"
+                   OnFactoryBuilt="OnFactoryBuilt" />
+
+<FactoryManageModal IsOpen="@isFactoryManageModalOpen"
+                    Slot="@game.FactorySlots[selectedFactoryIndex]"
+                    Close="CloseModal"
+                    OnFactoryUpdated="OnFactoryUpdated" />
+
 
 @code {
     private bool isChoosing = false;
@@ -194,9 +135,26 @@
     private bool isWarehouseModalOpen = false;
     private int selectedWarehouseIndex;
 
-    private bool isFactoryModalOpen = false;
+    private bool isFactoryBuildModalOpen = false;
+    private bool isFactoryManageModalOpen = false;
     private int selectedFactoryIndex;
 
+    private ElementReference mapRef;
+    private ElementReference mapContainerRef;
+
+    private bool isDragging = false;
+    private double lastMouseX, lastMouseY;
+    private double offsetX = 0, offsetY = 0;
+
+    private double mapWidth = 2000;
+    private double mapHeight = 2000;
+    private double containerWidth = 0;
+    private double containerHeight = 0;
+
+    [Inject] private IJSRuntime JS { get; set; } = default!;
+
+    private string mapStyle => $"transform: translate({offsetX}px, {offsetY}px); transition: none;";
+   
     private string? errorMessage;
 
     protected override void OnInitialized()
@@ -217,20 +175,35 @@
 
     private void OnEnergyStorageSlotClicked(int index)
     {
+        if (index < 0 || index >= game.EnergyStorageSlots.Count)
+            return;
+
         selectedEnergyStorageIndex = index;
         isEnergyStorageModalOpen = true;
     }
 
     private void OnWarehouseSlotClicked(int index)
     {
+        if (index < 0 || index >= game.WarehouseSlots.Count)
+            return;
+
         selectedWarehouseIndex = index;
         isWarehouseModalOpen = true;
     }
 
     private void OnFactorySlotClicked(int index)
     {
+        if (index < 0 || index >= game.FactorySlots.Count)
+            return;
+
         selectedFactoryIndex = index;
-        isFactoryModalOpen = true;
+
+        var slot = game.FactorySlots[index];
+
+        if (!slot.IsBuilt)
+            isFactoryBuildModalOpen = true;
+        else
+            isFactoryManageModalOpen = true;
     }
 
     private Task CloseEnergyStorageModal()
@@ -241,24 +214,37 @@
 
     private async Task UpgradeEnergyStorage()
     {
+        game.EnergyStorageSlots[selectedEnergyStorageIndex].IsBuilt = true;
         isEnergyStorageModalOpen = false;
         await game.Save();
         StateHasChanged();
     }
 
+
     private async Task UpgradeWarehouse()
     {
+        game.WarehouseSlots[selectedWarehouseIndex].IsBuilt = true;
         isWarehouseModalOpen = false;
         await game.Save();
         StateHasChanged();
     }
 
-    private async Task UpgradeFactory()
+
+    private async Task OnFactoryUpdated()
     {
-        isFactoryModalOpen = false;
+        isFactoryManageModalOpen = false;
         await game.Save();
         StateHasChanged();
     }
+
+    private async Task OnFactoryBuilt()
+    {
+        game.FactorySlots[selectedFactoryIndex].IsBuilt = true;
+        isFactoryBuildModalOpen = false;
+        await game.Save();
+        StateHasChanged();
+    }
+
 
     private async Task RefreshPage()
     {
@@ -280,16 +266,21 @@
         {
             game.Player.Money -= building.Cost;
 
-            game.SetPowerPlant(i, building);
+            var slot = game.PowerPlantSlots[i];
+            slot.IsOccupied = true;
+            slot.Building = building;
 
             await game.Save();
+
             isChoosing = false;
+            StateHasChanged();
         }
         else
         {
             errorMessage = "Za mało pieniędzy!";
         }
     }
+
 
     private string GetImageName(string name)
     {
@@ -305,14 +296,107 @@
         isChoosing = false;
         isEnergyStorageModalOpen = false;
         isWarehouseModalOpen = false;
-        isFactoryModalOpen = false;
+        isFactoryBuildModalOpen = false;
+        isFactoryManageModalOpen = false;
     }
 
-    private bool ShouldCloseAfterBuild()
+    private void StartDrag(MouseEventArgs e)
     {
-        var slot = game.FactorySlots[selectedFactoryIndex];
-        return !slot.IsBuilt;
+        isDragging = true;
+        lastMouseX = e.ClientX;
+        lastMouseY = e.ClientY;
+    }
+
+    private void StopDrag(MouseEventArgs e)
+    {
+        isDragging = false;
+    }
+
+    private void OnDrag(MouseEventArgs e)
+    {
+        if (!isDragging) return;
+
+        var deltaX = e.ClientX - lastMouseX;
+        var deltaY = e.ClientY - lastMouseY;
+
+        lastMouseX = e.ClientX;
+        lastMouseY = e.ClientY;
+
+        offsetX += deltaX;
+        offsetY += deltaY;
+
+        var maxOffsetX = 0;
+        var minOffsetX = -400;
+        var maxOffsetY = 0;
+        var minOffsetY = -400;
+
+        offsetX = Math.Clamp(offsetX, minOffsetX, maxOffsetX);
+        offsetY = Math.Clamp(offsetY, minOffsetY, maxOffsetY);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var size = await JS.InvokeAsync<Size>("getElementSize", mapContainerRef);
+            containerWidth = size.Width;
+            containerHeight = size.Height;
+
+            offsetX = -200;
+            offsetY = -200;
+
+            StateHasChanged();
+        }
+    }
+
+    private class Size
+    {
+        public double Width { get; set; }
+        public double Height { get; set; }
     }
 
     public void Dispose() => game.OnUpdate -= StateHasChanged;
+
+    public Dictionary<int, SlotPosition> PowerPlantSlotPositions = new()
+        {
+            [0] = new SlotPosition { X = 600, Y = 100 },
+            [1] = new SlotPosition { X = 750, Y = 100 },
+            [2] = new SlotPosition { X = 900, Y = 100 },
+            [3] = new SlotPosition { X = 1050, Y = 100 },
+            [4] = new SlotPosition { X = 1200, Y = 100 },
+        };
+
+    public Dictionary<int, SlotPosition> EnergyStorageSlotPositions = new()
+        {
+            [0] = new SlotPosition { X = 650, Y = 300 },
+            [1] = new SlotPosition { X = 1000, Y = 300 },
+        };
+
+    public Dictionary<int, SlotPosition> WarehouseSlotPositions = new()
+        {
+            [0] = new SlotPosition { X = 400, Y = 500 },
+            [1] = new SlotPosition { X = 1200, Y = 500 },
+            [2] = new SlotPosition { X = 400, Y = 800 },
+            [3] = new SlotPosition { X = 1200, Y = 800 },
+        };
+
+    public Dictionary<int, SlotPosition> FactorySlotPositions = new()
+        {
+            [0] = new SlotPosition { X = 600, Y = 600 },
+            [1] = new SlotPosition { X = 750, Y = 600 },
+            [2] = new SlotPosition { X = 900, Y = 600 },
+            [3] = new SlotPosition { X = 1050, Y = 600 },
+            [4] = new SlotPosition { X = 600, Y = 750 },
+            [5] = new SlotPosition { X = 750, Y = 750 },
+            [6] = new SlotPosition { X = 900, Y = 750 },
+            [7] = new SlotPosition { X = 1050, Y = 750 },
+            [8] = new SlotPosition { X = 600, Y = 900 },
+            [9] = new SlotPosition { X = 750, Y = 900 },
+            [10] = new SlotPosition { X = 900, Y = 900 },
+            [11] = new SlotPosition { X = 1050, Y = 900 },
+            [12] = new SlotPosition { X = 600, Y = 1050 },
+            [13] = new SlotPosition { X = 750, Y = 1050 },
+            [14] = new SlotPosition { X = 900, Y = 1050 },
+            [15] = new SlotPosition { X = 1050, Y = 1050 },
+        };
 }

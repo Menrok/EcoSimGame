@@ -1,0 +1,59 @@
+﻿@using EcoSimGame.Models
+@using EcoSimGame.Models.Factories
+@using EcoSimGame.Models.Slot
+@inject Services.GameStateService game
+
+@if (IsOpen)
+{
+    <div class="modal-backdrop" @onclick="CloseModal"> </div>
+
+    <div class="modal" @onclick:stopPropagation>
+        <h3>Wybuduj Fabrykę</h3>
+
+        <div class="building-cards-row">
+            @foreach (var factory in FactoryList.AllFactories)
+            {
+                var imageName = GetImageName(factory.Name);
+
+                <div class="building-card">
+                    <img src=@($"images/factory/{imageName}.png") alt="@factory.Name" class="building-image" />
+                    <div class="building-info">
+                        <strong>@factory.Name</strong><br />
+                        @factory.Description<br />
+                        Koszt: @factory.BuildCost
+                    </div>
+                    <button @onclick="() => BuildFactory(factory)" disabled="@(!CanAfford(factory))">Buduj</button>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public FactorySlot Slot { get; set; } = new();
+    [Parameter] public EventCallback Close { get; set; }
+    [Parameter] public EventCallback OnFactoryBuilt { get; set; }
+
+    private async Task BuildFactory(Factory factory)
+    {
+        if (CanAfford(factory))
+        {
+            game.Player.Money -= factory.BuildCost;
+            Slot.IsBuilt = true;
+            Slot.SelectedFactoryName = factory.Name;
+
+            await game.Save();
+            await OnFactoryBuilt.InvokeAsync();
+        }
+    }
+
+    private bool CanAfford(Factory factory) => game.Player.Money >= factory.BuildCost;
+    private void CloseModal() => Close.InvokeAsync();
+
+    private string GetImageName(string name) => name.ToLower()
+        .Replace(" ", "")
+        .Replace("ż", "z").Replace("ó", "o").Replace("ł", "l")
+        .Replace("ć", "c").Replace("ś", "s").Replace("ą", "a")
+        .Replace("ę", "e").Replace("ź", "z").Replace("ń", "n");
+}

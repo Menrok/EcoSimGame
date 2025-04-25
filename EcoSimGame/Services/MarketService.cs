@@ -33,17 +33,12 @@ public class MarketService : IDisposable
         else
         {
             foreach (var material in Models.Materials.MaterialList.AllMaterials)
-            {
                 prices[material.Name] = material.Price;
-            }
             await SavePrices();
         }
     }
 
-    public decimal GetPrice(string materialName)
-    {
-        return prices.TryGetValue(materialName, out var price) ? Math.Round(price, 2) : 0;
-    }
+    public decimal GetPrice(string materialName) => prices.TryGetValue(materialName, out var price) ? Math.Round(price, 2) : 0;
 
     public async Task AffectPrice(string materialName, int direction)
     {
@@ -67,13 +62,6 @@ public class MarketService : IDisposable
         await SavePrices();
     }
 
-    private async Task SavePrices()
-    {
-        await localStorage.SetItemAsync(StorageKey, prices);
-    }
-
-    public void Dispose()
-    {
-        timer?.Dispose();
-    }
+    private async Task SavePrices() => await localStorage.SetItemAsync(StorageKey, prices);
+    public void Dispose() => timer?.Dispose();
 }
