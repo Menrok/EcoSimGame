@@ -116,3 +116,87 @@
         cursor: not-allowed;
         opacity: 0.6;
     }
+
+.progress-bar-outer {
+    width: 100%;
+    height: 12px;
+    background-color: #ccc;
+    border-radius: 6px;
+    margin-top: 6px;
+}
+
+.progress-bar-inner {
+    height: 100%;
+    background-color: #2196F3;
+    border-radius: 6px;
+    transition: width 0.2s ease;
+}
+
+.modal-flex {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+}
+
+.factory-panel {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    height: 300px;
+}
+
+.factory-left {
+    width: 30%;
+    border-right: 1px solid #ddd;
+    padding-right: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.factory-right {
+    width: 70%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.material-icons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 8px;
+}
+
+.material-icon {
+    width: 48px;
+    height: 48px;
+    cursor: pointer;
+    border-radius: 6px;
+    border: 2px solid transparent;
+    transition: border 0.2s ease;
+}
+
+    .material-icon:hover {
+        border-color: #2196F3;
+    }
+
+.progress-bar-outer {
+    width: 100%;
+    height: 14px;
+    background-color: #ddd;
+    border-radius: 7px;
+    overflow: hidden;
+}
+
+.progress-bar-inner {
+    height: 100%;
+    background-color: #2196F3;
+    transition: width 0.3s ease;
+}
+
+.full-width {
+    width: 100%;
+}

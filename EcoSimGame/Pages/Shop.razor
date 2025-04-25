@@ -1,6 +1,6 @@
 ﻿@page "/Shop"
 @using EcoSimGame.Models
-@using EcoSimGame.Models.List
+@using EcoSimGame.Models.Materials
 @using EcoSimGame.Services
 @inject Services.GameStateService game
 @inject MarketService market
@@ -69,7 +69,7 @@
                         <div class="material-info">
                             <p><strong>@material.Name</strong></p>
                             <p>Cena: @price</p>
-                            <p>MAgazyn: @qty</p>
+                            <p>Magazyn: @qty</p>
                         </div>
                     </div>
                 }
@@ -89,7 +89,7 @@ else
     private List<Material> sellableAdvancedComponents = new();
     private List<Material> sellableFinalProduct = new();
 
-    private System.Timers.Timer refreshTimer;
+    private System.Timers.Timer? refreshTimer;
     private int secondsLeft = 30;
 
     private string selectedTab = "materials";

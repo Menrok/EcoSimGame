@@ -1,4 +1,5 @@
-﻿using EcoSimGame.Models.Slot;
+﻿using EcoSimGame.Models.Energy;
+using EcoSimGame.Models.Slot;
 
 namespace EcoSimGame.Models;
 
@@ -19,7 +20,6 @@ public class Player
     public List<FactorySlot> FactorySlots { get; set; } = new();
 
     public DateTime? LastProcessingTime { get; set; }
-    public List<string> OwnedSchematics { get; set; }
 
     public Player()
     {
@@ -28,7 +28,6 @@ public class Player
         Level = 1;
         Experience = 0;
         Inventory = new Inventory();
-        OwnedSchematics = new List<string>();
     }
 
     public void AddExperience(int amount)
@@ -53,24 +52,6 @@ public class Player
         };
     }
 
-    public bool TryBuySchematic(string schematicName, int requiredLevel, decimal cost)
-    {
-        if (Level >= requiredLevel && Money >= cost && !OwnedSchematics.Contains(schematicName))
-        {
-            Money -= cost;
-            OwnedSchematics.Add(schematicName);
-            return true;
-        }
-
-        return false;
-    }
-
-    public bool CanBuySchematic(string schematicName, int requiredLevel, decimal cost)
-    {
-        return Level >= requiredLevel && Money >= cost && !OwnedSchematics.Contains(schematicName);
-    }
-
-    public bool HasSchematic(string schematicName) => OwnedSchematics.Contains(schematicName);
     public int GetCurrentInventorySize() => Inventory.GetAllWithQuantity().Sum(item => item.Quantity);
     public bool CanAddToWarehouse(int quantity) => GetCurrentInventorySize() + quantity <= WarehouseCapacity;
 

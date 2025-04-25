@@ -1,4 +1,5 @@
-﻿using EcoSimGame.Models.List;
+﻿using EcoSimGame.Models.Factories;
+using EcoSimGame.Models.Materials;
 
 namespace EcoSimGame.Models.Slot;
 
@@ -56,10 +57,10 @@ public class FactorySlot
         lastProductionTime = DateTime.Now;
     }
 
-    public void Update(Player player)
+    public bool Update(Player player)
     {
         if (!IsBuilt || string.IsNullOrEmpty(SelectedProduction))
-            return;
+            return false;
 
         var elapsed = (DateTime.Now - lastProductionTime).TotalSeconds;
         var interval = Math.Max(6.0 - Level, 1.0);
@@ -67,7 +68,14 @@ public class FactorySlot
         if (elapsed >= interval && CanProduce(player))
         {
             Produce(player);
+            return true;
         }
+
+        return false;
+    }
+    public DateTime GetLastProductionTime()
+    {
+        return lastProductionTime;
     }
 
     public void Upgrade()

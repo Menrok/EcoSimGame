@@ -1,4 +1,4 @@
-﻿namespace EcoSimGame.Models.List;
+﻿namespace EcoSimGame.Models.Energy;
 
 public class EnergyProductionList
 {

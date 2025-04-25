@@ -1,7 +1,6 @@
-﻿using EcoSimGame.Models.List;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
-namespace EcoSimGame.Models;
+namespace EcoSimGame.Models.Materials;
 
 public class MaterialStock
 {

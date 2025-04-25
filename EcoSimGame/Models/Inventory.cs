@@ -1,4 +1,4 @@
-﻿using EcoSimGame.Models.List;
+﻿using EcoSimGame.Models.Materials;
 
 namespace EcoSimGame.Models;
 

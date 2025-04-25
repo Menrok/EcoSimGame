@@ -32,7 +32,7 @@ public class MarketService : IDisposable
         }
         else
         {
-            foreach (var material in MaterialList.AllMaterials)
+            foreach (var material in Models.Materials.MaterialList.AllMaterials)
             {
                 prices[material.Name] = material.Price;
             }

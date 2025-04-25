@@ -1,6 +1,6 @@
 ﻿using Blazored.LocalStorage;
 using EcoSimGame.Models;
-using EcoSimGame.Models.List;
+using EcoSimGame.Models.Energy;
 using EcoSimGame.Models.Slot;
 
 namespace EcoSimGame.Services
@@ -79,8 +79,9 @@ namespace EcoSimGame.Services
             InitializeEnergyBuildings();
 
             Player.EnergyStorage.GeneratedEnergyPerTick = Player.PowerPlantSlots
-                .Where(s => s.IsOccupied && s.Building != null)
-                .Sum(s => s.Building.EnergyPerTick);
+                .Where(s => s.Building != null)
+                .Sum(s => s.Building!.EnergyPerTick);
+
 
             UpdateTotalEnergyStorage();
         }
@@ -90,9 +91,6 @@ namespace EcoSimGame.Services
         {
             await localStorage.SetItemAsync("player", Player);
             var json = System.Text.Json.JsonSerializer.Serialize(Player);
-            Console.WriteLine(">>> JSON gracza:");
-            Console.WriteLine(json);
-
         }
         private void InitializeEnergyBuildings()
         {
@@ -105,7 +103,7 @@ namespace EcoSimGame.Services
         {
             if (Player.PowerPlantSlots == null || Player.PowerPlantSlots.Count == 0)
             {
-                Player.PowerPlantSlots.Clear();
+                Player.PowerPlantSlots!.Clear();
                 for (int i = 0; i < 5; i++)
                 {
                     Player.PowerPlantSlots.Add(new PowerPlantSlot());
@@ -176,10 +174,16 @@ namespace EcoSimGame.Services
 
         private void UpdateFactories()
         {
+            bool anyProduced = false;
+
             foreach (var factory in Player.FactorySlots)
             {
-                factory.Update(Player);
+                if (factory.Update(Player))
+                    anyProduced = true;
             }
+
+            if (anyProduced)
+                _ = Save();
         }
     }
 }

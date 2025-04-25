@@ -18,7 +18,6 @@
 
 @code {
     private string playerName = "";
-    private bool isNameEntered = false;
 
     private async Task ConfirmName()
     {
@@ -26,7 +25,6 @@
         {
             game.Player.Name = playerName;
             await game.Save();
-            isNameEntered = true;
         }
     }
 

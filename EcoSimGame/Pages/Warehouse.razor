@@ -1,6 +1,5 @@
 ﻿@page "/Warehouse"
 @using EcoSimGame.Models
-@using EcoSimGame.Models.List
 @inject Services.GameStateService game
 
 <p><strong>Pojemność magazynu:</strong> @game.Player.GetCurrentInventorySize() / @game.Player.WarehouseCapacity</p>

@@ -1,4 +1,6 @@
-﻿namespace EcoSimGame.Models.Slot;
+﻿using EcoSimGame.Models.Energy;
+
+namespace EcoSimGame.Models.Slot;
 
 public class PowerPlantSlot
 {

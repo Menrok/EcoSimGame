@@ -1,4 +1,4 @@
-﻿namespace EcoSimGame.Models.List;
+﻿namespace EcoSimGame.Models.Materials;
 
 public static class RecipeList
 {

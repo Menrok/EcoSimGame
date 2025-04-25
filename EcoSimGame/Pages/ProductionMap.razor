@@ -1,7 +1,7 @@
 ﻿@page "/productionmap"
-@using EcoSimGame.Models
-@using EcoSimGame.Models.List
 @using EcoSimGame.Components
+@using EcoSimGame.Models
+@using EcoSimGame.Models.Energy
 
 @inject Services.GameStateService game
 
@@ -181,9 +181,8 @@
 <FactoryModal IsOpen="@isFactoryModalOpen"
               Slot="@game.FactorySlots[selectedFactoryIndex]"
               Close="CloseModal"
-              OnUpgrade="UpgradeFactory" />
-
-
+              OnUpgrade="UpgradeFactory"
+              CloseAfterBuild="@ShouldCloseAfterBuild()" />
 
 @code {
     private bool isChoosing = false;
@@ -307,6 +306,12 @@
         isEnergyStorageModalOpen = false;
         isWarehouseModalOpen = false;
         isFactoryModalOpen = false;
+    }
+
+    private bool ShouldCloseAfterBuild()
+    {
+        var slot = game.FactorySlots[selectedFactoryIndex];
+        return !slot.IsBuilt;
     }
 
     public void Dispose() => game.OnUpdate -= StateHasChanged;

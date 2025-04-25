@@ -1,4 +1,4 @@
-﻿namespace EcoSimGame.Models;
+﻿namespace EcoSimGame.Models.Materials;
 
 public class Material
 {
