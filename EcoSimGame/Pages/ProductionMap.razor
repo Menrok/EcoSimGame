@@ -1,24 +1,18 @@
 ﻿@page "/productionmap"
-@using EcoSimGame.Components
-@using EcoSimGame.Models
-@using EcoSimGame.Models.Energy
-@using EcoSimGame.Models.Slot
 
-@inject Services.GameStateService game
-
-<div class="production-map-container" @ref="mapContainerRef" @onmousedown="StartDrag" @onmouseup="StopDrag" @onmousemove="OnDrag">
+<div class="production-map-container" @ref="mapContainerRef" @onmousedown="mouseService.StartDrag" @onmouseup="mouseService.StopDrag" @onmousemove="mouseService.OnDrag">
     <div class="production-map" @ref="mapRef" style="@mapStyle">
 
         @for (int i = 0; i < game.PowerPlantSlots.Count; i++)
         {
             var index = i;
             var slot = game.PowerPlantSlots[index];
-            var pos = PowerPlantSlotPositions[index];
+            var pos = SlotPositions.PowerPlantSlotPositions[index];
 
             <div class="slot power-plant" style="left:@($"{pos.X}px"); top:@($"{pos.Y}px");" @onclick="@(() => OnPowerPlantSlotClicked(index))">
                 @if (slot.IsOccupied && slot.Building is not null)
                 {
-                    var imageName = GetImageName(slot.Building.Name);
+                    var imageName = NameHelper.NormalizeImageName(slot.Building.Name);
 
                     <div class="power-plant-slot-content">
                         <img src=@($"images/energy/{imageName}.png") alt="@slot.Building.Name" class="power-plant-icon" />
@@ -36,7 +30,7 @@
         {
             var index = i;
             var slot = game.EnergyStorageSlots[index];
-            var pos = EnergyStorageSlotPositions[index];
+            var pos = SlotPositions.EnergyStorageSlotPositions[index];
 
             <div class="slot energy-storage" style="left:@($"{pos.X}px"); top:@($"{pos.Y}px");" @onclick="@(() => OnEnergyStorageSlotClicked(index))">
                 @if (slot.IsBuilt)
@@ -57,7 +51,7 @@
         {
             var index = i;
             var slot = game.WarehouseSlots[index];
-            var pos = WarehouseSlotPositions[index];
+            var pos = SlotPositions.WarehouseSlotPositions[index];
 
             <div class="slot warehouse" style="left:@($"{pos.X}px"); top:@($"{pos.Y}px");" @onclick="@(() => OnWarehouseSlotClicked(index))">
                 @if (slot.IsBuilt)
@@ -74,16 +68,16 @@
             </div>
         }
 
-        @for (int i = 0; i < Math.Min(game.FactorySlots.Count, FactorySlotPositions.Count); i++)
+        @for (int i = 0; i < Math.Min(game.FactorySlots.Count, SlotPositions.FactorySlotPositions.Count); i++)
         {
             var index = i;
             var slot = game.FactorySlots[index];
-            var pos = FactorySlotPositions[index];
+            var pos = SlotPositions.FactorySlotPositions[index];
 
             <div class="slot factory" style="left:@($"{pos.X}px"); top:@($"{pos.Y}px");" @onclick="@(() => OnFactorySlotClicked(index))">
                 @if (slot.IsBuilt && slot.GetFactory() is not null)
                 {
-                    var imageName = GetImageName(slot.SelectedFactoryName ?? "fabryka");
+                    var imageName = NameHelper.NormalizeImageName(slot.SelectedFactoryName ?? "fabryka");
 
                     <div class="power-plant-slot-content">
                         <img src=@($"images/factory/{imageName}.png") alt="@slot.SelectedFactoryName" class="power-plant-icon" />
@@ -128,37 +122,25 @@
 @code {
     private bool isChoosing = false;
     private int selectedSlotIndex;
-
     private bool isEnergyStorageModalOpen = false;
     private int selectedEnergyStorageIndex;
-
     private bool isWarehouseModalOpen = false;
     private int selectedWarehouseIndex;
-
     private bool isFactoryBuildModalOpen = false;
     private bool isFactoryManageModalOpen = false;
     private int selectedFactoryIndex;
 
     private ElementReference mapRef;
     private ElementReference mapContainerRef;
+    private ProductionMapState mapState = new();
+    private ProductionMapMouseService mouseService;
 
-    private bool isDragging = false;
-    private double lastMouseX, lastMouseY;
-    private double offsetX = 0, offsetY = 0;
-
-    private double mapWidth = 2000;
-    private double mapHeight = 2000;
-    private double containerWidth = 0;
-    private double containerHeight = 0;
-
-    [Inject] private IJSRuntime JS { get; set; } = default!;
-
-    private string mapStyle => $"transform: translate({offsetX}px, {offsetY}px); transition: none;";
-   
     private string? errorMessage;
+    private string mapStyle => mapState.GetTransformStyle();
 
     protected override void OnInitialized()
     {
+        mouseService = new ProductionMapMouseService(mapState);
         game.InitializePowerSlots();
         game.InitializeEnergyStorageSlots();
         game.InitializeWarehouseSlots();
@@ -266,9 +248,7 @@
         {
             game.Player.Money -= building.Cost;
 
-            var slot = game.PowerPlantSlots[i];
-            slot.IsOccupied = true;
-            slot.Building = building;
+            game.SetPowerPlant(i, building);
 
             await game.Save();
 
@@ -282,15 +262,6 @@
     }
 
 
-    private string GetImageName(string name)
-    {
-        return name.ToLower()
-            .Replace(" ", "")
-            .Replace("ż", "z").Replace("ó", "o").Replace("ł", "l")
-            .Replace("ć", "c").Replace("ś", "s").Replace("ą", "a")
-            .Replace("ę", "e").Replace("ź", "z").Replace("ń", "n");
-    }
-
     private void CloseModal()
     {
         isChoosing = false;
@@ -300,103 +271,23 @@
         isFactoryManageModalOpen = false;
     }
 
-    private void StartDrag(MouseEventArgs e)
-    {
-        isDragging = true;
-        lastMouseX = e.ClientX;
-        lastMouseY = e.ClientY;
-    }
-
-    private void StopDrag(MouseEventArgs e)
-    {
-        isDragging = false;
-    }
-
-    private void OnDrag(MouseEventArgs e)
-    {
-        if (!isDragging) return;
-
-        var deltaX = e.ClientX - lastMouseX;
-        var deltaY = e.ClientY - lastMouseY;
-
-        lastMouseX = e.ClientX;
-        lastMouseY = e.ClientY;
-
-        offsetX += deltaX;
-        offsetY += deltaY;
-
-        var maxOffsetX = 0;
-        var minOffsetX = -400;
-        var maxOffsetY = 0;
-        var minOffsetY = -400;
-
-        offsetX = Math.Clamp(offsetX, minOffsetX, maxOffsetX);
-        offsetY = Math.Clamp(offsetY, minOffsetY, maxOffsetY);
-    }
-
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
             var size = await JS.InvokeAsync<Size>("getElementSize", mapContainerRef);
-            containerWidth = size.Width;
-            containerHeight = size.Height;
+            mapState.ContainerWidth = size.Width;
+            mapState.ContainerHeight = size.Height;
 
-            offsetX = -200;
-            offsetY = -200;
+            mapState.OffsetX = (mapState.ContainerWidth - mapState.MapWidth) / 2;
+            mapState.OffsetY = (mapState.ContainerHeight - mapState.MapHeight) / 2;
+
+            mapState.OffsetX = (int)mapState.OffsetX;
+            mapState.OffsetY = (int)mapState.OffsetY;
 
             StateHasChanged();
         }
     }
 
-    private class Size
-    {
-        public double Width { get; set; }
-        public double Height { get; set; }
-    }
-
     public void Dispose() => game.OnUpdate -= StateHasChanged;
-
-    public Dictionary<int, SlotPosition> PowerPlantSlotPositions = new()
-        {
-            [0] = new SlotPosition { X = 600, Y = 100 },
-            [1] = new SlotPosition { X = 750, Y = 100 },
-            [2] = new SlotPosition { X = 900, Y = 100 },
-            [3] = new SlotPosition { X = 1050, Y = 100 },
-            [4] = new SlotPosition { X = 1200, Y = 100 },
-        };
-
-    public Dictionary<int, SlotPosition> EnergyStorageSlotPositions = new()
-        {
-            [0] = new SlotPosition { X = 650, Y = 300 },
-            [1] = new SlotPosition { X = 1000, Y = 300 },
-        };
-
-    public Dictionary<int, SlotPosition> WarehouseSlotPositions = new()
-        {
-            [0] = new SlotPosition { X = 400, Y = 500 },
-            [1] = new SlotPosition { X = 1200, Y = 500 },
-            [2] = new SlotPosition { X = 400, Y = 800 },
-            [3] = new SlotPosition { X = 1200, Y = 800 },
-        };
-
-    public Dictionary<int, SlotPosition> FactorySlotPositions = new()
-        {
-            [0] = new SlotPosition { X = 600, Y = 600 },
-            [1] = new SlotPosition { X = 750, Y = 600 },
-            [2] = new SlotPosition { X = 900, Y = 600 },
-            [3] = new SlotPosition { X = 1050, Y = 600 },
-            [4] = new SlotPosition { X = 600, Y = 750 },
-            [5] = new SlotPosition { X = 750, Y = 750 },
-            [6] = new SlotPosition { X = 900, Y = 750 },
-            [7] = new SlotPosition { X = 1050, Y = 750 },
-            [8] = new SlotPosition { X = 600, Y = 900 },
-            [9] = new SlotPosition { X = 750, Y = 900 },
-            [10] = new SlotPosition { X = 900, Y = 900 },
-            [11] = new SlotPosition { X = 1050, Y = 900 },
-            [12] = new SlotPosition { X = 600, Y = 1050 },
-            [13] = new SlotPosition { X = 750, Y = 1050 },
-            [14] = new SlotPosition { X = 900, Y = 1050 },
-            [15] = new SlotPosition { X = 1050, Y = 1050 },
-        };
 }

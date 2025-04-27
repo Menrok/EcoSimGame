@@ -1,6 +1,4 @@
 ﻿@page "/"
-@inject NavigationManager Navigation
-@inject Services.GameStateService game
 
 <h1>Economy Simulator Game</h1>
 
@@ -31,10 +29,5 @@
     protected override void OnInitialized()
     {
         playerName = game.Player.Name;
-    }
-
-    private void StartGame()
-    {
-        Navigation.NavigateTo("/Shop");
     }
 }

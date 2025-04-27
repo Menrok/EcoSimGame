@@ -1,10 +1,5 @@
 ﻿@inherits LayoutComponentBase
 @implements IDisposable
-@inject ILocalStorageService localStorage
-@inject Services.GameStateService game
-@inject Services.MarketService market
-@using Blazored.LocalStorage
-@using EcoSimGame.Models
 
 <div class="page">
 
@@ -44,7 +39,7 @@
             </div>
         </div>
 
-        <article class="content px-4">
+        <article class="contentG">
             @Body
         </article>
     </main>

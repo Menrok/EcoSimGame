@@ -8,3 +8,16 @@
 @using Microsoft.JSInterop
 @using EcoSimGame
 @using EcoSimGame.Layout
+@using EcoSimGame.Components
+@using EcoSimGame.Models
+@using EcoSimGame.Models.Energy
+@using EcoSimGame.Models.Slot
+@using EcoSimGame.Models.Materials
+@using EcoSimGame.Models.Map
+@using EcoSimGame.Models.Factories
+@using EcoSimGame.Services
+@using Blazored.LocalStorage
+@inject Services.GameStateService game
+@inject Services.MarketService market
+@inject IJSRuntime JS
+@inject ILocalStorageService localStorage

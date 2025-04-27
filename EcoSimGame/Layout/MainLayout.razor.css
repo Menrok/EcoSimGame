@@ -1,3 +1,13 @@
+.contentG {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    z-index: 1;
+    padding: 0;
+    margin: 0;
+}
+
 .page {
     position: relative;
     display: flex;
@@ -9,6 +19,7 @@ main {
 }
 
 .sidebar {
+    z-index: 1000;
     background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
 }
 
@@ -70,7 +81,5 @@ main {
     }
 
     .top-row, article {
-        padding-left: 2rem !important;
-        padding-right: 1.5rem !important;
     }
 }

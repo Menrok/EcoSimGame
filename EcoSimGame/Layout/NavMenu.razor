@@ -1,11 +1,8 @@
-﻿<div class="header-bar">
-    <img src="images/logo.png" alt="EcoSimGame Logo" class="header-logo" />
-    <button title="Menu" class="menu-button" @onclick="ToggleNavMenu">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-</div>
+﻿<div class="sidebar-menu">
+    <div class="header-bar">
+        <img src="images/logo.png" alt="EcoSimGame Logo" class="header-logo" />
+    </div>
 
-<div class="@NavMenuCssClass nav-scroll" @onclick="ToggleNavMenu">
     <nav class="nav flex-column">
         <div class="nav-item">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
@@ -18,17 +15,20 @@
             </NavLink>
         </div>
         <div class="nav-item">
-            <NavLink class="nav-link" href="Shop">
+            <div class="nav-link" @onclick="OpenShop" style="cursor: pointer;">
                 <img src="images/main/sklep.png" class="menu-icon" alt="Sklep" /> Sklep
-            </NavLink>
+            </div>
         </div>
         <div class="nav-item">
-            <NavLink class="nav-link" href="Warehouse">
+            <div class="nav-link" @onclick="ShowWarehouse" style="cursor: pointer;">
                 <img src="images/main/magazyn.png" class="menu-icon" alt="Magazyn" /> Magazyn
-            </NavLink>
+            </div>
         </div>
     </nav>
 </div>
+
+<InventoryModal IsOpen="@isInventoryModalOpen" Close="@CloseInventory" />
+<ShopModal IsOpen="@isShopModalOpen" Close="CloseShop" />
 
 @code {
     private bool collapseNavMenu = true;
@@ -36,4 +36,27 @@
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
     private void ToggleNavMenu() => collapseNavMenu = !collapseNavMenu;
+
+    private bool isInventoryModalOpen = false;
+    private bool isShopModalOpen = false;
+
+    private void ShowWarehouse()
+    {
+        isInventoryModalOpen = true;
+    }
+
+    private void CloseInventory()
+    {
+        isInventoryModalOpen = false;
+    }
+
+    private void OpenShop()
+    {
+        isShopModalOpen = true;
+    }
+
+    private void CloseShop()
+    {
+        isShopModalOpen = false;
+    }
 }
