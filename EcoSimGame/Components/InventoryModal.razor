@@ -14,15 +14,16 @@
                 @foreach (var group in inventoryGroups)
                 {
                     <div class="warehouse-column">
-                        <h4>@group.Key</h4>
                         @foreach (var name in group.Value)
                         {
                             var quantity = game.Player.Inventory.GetQuantity(name);
                             if (quantity > 0)
                             {
-                                <div class="material-row">
-                                    <img src="@($"images/materials/{NameHelper.NormalizeImageName(name)}.png")" alt="@name" class="material-icon" />
-                                    <span><strong>@name:</strong> @quantity sztuk</span>
+                                <div class="material-entry">
+                                    <div class="material-container" title="@name">
+                                        <img src="@($"images/materials/{NameHelper.NormalizeImageName(name)}.png")" alt="@name" class="material-icon" />
+                                        <div class="material-quantity">@quantity</div>
+                                    </div>
                                 </div>
                             }
                         }
@@ -34,8 +35,6 @@
         {
             <p>Magazyn jest pusty.</p>
         }
-
-        <button class="close-button" @onclick="CloseModal">Zamknij</button>
     </div>
 }
 
@@ -45,12 +44,28 @@
 
     private readonly Dictionary<string, List<string>> inventoryGroups = new()
         {
-            ["Surowce"] = new() { "Ruda żelaza", "Ruda miedzi", "Ruda krzemu", "Ruda litu", "Ropa naftowa", "Włókno węglowe" },
-            ["Materiały przetworzone"] = new() { "Sztabka żelaza", "Sztabka miedzi", "Sztabka krzemu", "Sztabka litu", "Plastik", "Kompozyt węglowy" },
-            ["Produkty"] = new() { "Silnik główny", "Komora spalania", "Płyta główna", "Moduł pamięci", "Stal konstrukcyjna", "Powłoka antykorozyjna", "Panel kompozytowy", "Stelaż wewnętrzny" },
-            ["Komponenty"] = new() { "Napęd rakietowy", "Komputer pokładowy", "Zbiornik paliwa", "Kadłub rakiety" },
-            ["Produkt końcowy"] = new() { "Rakieta kosmiczna" }
+            ["Surowce"] = new()
+    {
+        "Ferronit", "Plastotyt", "Kwarcyn", "Voltanium"
+    },
+            ["Materiały przetworzone"] = new()
+    {
+        "Ferron", "Plastium", "Quarzite", "Voltite"
+    },
+            ["Półprodukty"] = new()
+    {
+        "Ferron Frame", "Plastoid Sheet", "Quarz Chip", "Volt Core"
+    },
+            ["Komponenty"] = new()
+    {
+        "NanoStructure", "Quantum CPU"
+    },
+            ["Produkt końcowy"] = new()
+    {
+        "Stacja Kolonizacyjna"
+    }
         };
+
 
     private void CloseModal() => Close.InvokeAsync();
 }

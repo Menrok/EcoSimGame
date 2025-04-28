@@ -32,31 +32,18 @@
 
 @code {
     private bool collapseNavMenu = true;
+    private bool isInventoryModalOpen = false;
+    private bool isShopModalOpen = false;
 
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
     private void ToggleNavMenu() => collapseNavMenu = !collapseNavMenu;
 
-    private bool isInventoryModalOpen = false;
-    private bool isShopModalOpen = false;
+    private void ShowWarehouse() => isInventoryModalOpen = true;
 
-    private void ShowWarehouse()
-    {
-        isInventoryModalOpen = true;
-    }
+    private void CloseInventory() => isInventoryModalOpen = false;
 
-    private void CloseInventory()
-    {
-        isInventoryModalOpen = false;
-    }
+    private void OpenShop() => isShopModalOpen = true;
 
-    private void OpenShop()
-    {
-        isShopModalOpen = true;
-    }
-
-    private void CloseShop()
-    {
-        isShopModalOpen = false;
-    }
+    private void CloseShop() => isShopModalOpen = false;
 }

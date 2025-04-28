@@ -8,7 +8,7 @@
         <div class="building-cards-row">
             @foreach (var factory in FactoryList.AllFactories)
             {
-                var imageName = GetImageName(factory.Name);
+                var imageName = NameHelper.NormalizeImageName(factory.Name);
 
                 <div class="building-card">
                     <img src=@($"images/factory/{imageName}.png") alt="@factory.Name" class="building-image" />
@@ -45,10 +45,4 @@
 
     private bool CanAfford(Factory factory) => game.Player.Money >= factory.BuildCost;
     private void CloseModal() => Close.InvokeAsync();
-
-    private string GetImageName(string name) => name.ToLower()
-        .Replace(" ", "")
-        .Replace("ż", "z").Replace("ó", "o").Replace("ł", "l")
-        .Replace("ć", "c").Replace("ś", "s").Replace("ą", "a")
-        .Replace("ę", "e").Replace("ź", "z").Replace("ń", "n");
 }

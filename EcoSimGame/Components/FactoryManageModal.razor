@@ -11,7 +11,7 @@
                 <div class="material-icons">
                     @foreach (var material in availableProductions)
                     {
-                        <img src="@($"images/materials/{GetImageName(material)}.png")"
+                        <img src="@($"images/materials/{NameHelper.NormalizeImageName(material)}.png")"
                              alt="@material"
                              title="@material"
                              class="material-icon"
@@ -97,10 +97,4 @@
         var interval = Math.Max(6.0 - Slot.Level, 1.0);
         return Math.Min((int)(elapsed / interval * 100), 100);
     }
-
-    private string GetImageName(string name) => name.ToLower()
-        .Replace(" ", "")
-        .Replace("ż", "z").Replace("ó", "o").Replace("ł", "l")
-        .Replace("ć", "c").Replace("ś", "s").Replace("ą", "a")
-        .Replace("ę", "e").Replace("ź", "z").Replace("ń", "n");
 }

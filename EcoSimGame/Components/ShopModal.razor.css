@@ -9,23 +9,25 @@
 }
 
 .modal {
+    background-image: url('images/tlo.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: #1c1f26;
-    color: #FFDEAD;
-    padding: 20px;
+    color: #1D8AFF;
+    padding: 90px;
     border-radius: 12px;
     z-index: 1001;
     max-width: 1000px;
-    width: 90%;
+    width: 800px;
     min-height: 400px;
     height: 800px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
     font-size: 1rem;
     overflow-y: auto;
 }
@@ -36,61 +38,53 @@
         text-align: center;
     }
 
-.close-button {
-    background-color: #2196F3;
-    color: white;
-    border: none;
-    padding: 0.6rem 1.2rem;
-    border-radius: 8px;
+.shop-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
     font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.3s;
+    font-size: 1.1rem;
+    text-decoration: none;
+    border-radius: 10px;
+    transition: background-color 0.3s, transform 0.2s, color 0.3s;
+    color: #1D8AFF;
 }
 
-    .close-button:hover {
-        background-color: #0b7dda;
-    }
-
-.shop-container {
-    display: flex;
-    gap: 2rem;
-}
-
-.shop-left, .shop-right {
-    flex: 1;
-}
-
-h4 {
-    margin: 0.5rem 0;
-}
-
-.tabs {
-    display: flex;
-    gap: 0.5rem;
-    margin-bottom: 0.5rem;
-}
-
-    .tabs button {
-        padding: 0.5rem 1rem;
-        border: none;
+    .shop-tabs button {
+        padding: 0.5rem 1.5rem;
         background-color: #2a2d35;
-        color: #FFDEAD;
+        color: #1D8AFF;
         font-weight: bold;
+        border: none;
         border-radius: 6px;
         cursor: pointer;
         transition: background-color 0.3s;
     }
 
-        .tabs button:hover {
+        .shop-tabs button:hover {
             background-color: #404450;
         }
 
-    .tabs .active {
-        background-color: #696969;
+    .shop-tabs .active {
+        background-color: rgba(32, 201, 255, 0.3);
+        color: #1DC4FF;
     }
 
-.tab-content {
-    margin-top: 0.5rem;
+.shop-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    justify-content: center;
+}
+
+.shop-left, .shop-right {
+    flex: 1 1 100%;
+}
+
+h4 {
+    margin: 0.5rem 0;
+    font-size: 1.2rem;
 }
 
 .material-entry {
@@ -109,8 +103,8 @@ h4 {
 }
 
 .material-icon {
-    width: 64px;
-    height: 64px;
+    width: 100%;
+    height: 100%;
     border-radius: 12px;
     object-fit: cover;
     box-shadow: 0 0 4px rgba(0,0,0,0.3);
@@ -154,4 +148,35 @@ h4 {
     font-weight: bold;
     text-align: center;
     margin-top: 0.5rem;
+}
+
+.warehouse-columns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    margin-top: 1rem;
+    width: 100%;
+    justify-content: center;
+}
+
+.warehouse-column {
+    flex: 1 1 150px;
+}
+
+.warehouse-grid {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.quantity-badge {
+    position: absolute;
+    bottom: 2px;
+    right: 4px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    font-size: 0.75rem;
+    padding: 2px 5px;
+    border-radius: 8px;
+    font-weight: bold;
+    pointer-events: none;
 }
