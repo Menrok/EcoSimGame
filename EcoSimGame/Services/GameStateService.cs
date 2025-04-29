@@ -45,46 +45,25 @@ namespace EcoSimGame.Services
             {
                 Player = stored;
 
-                if (Player.PowerPlantSlots == null || Player.PowerPlantSlots.Count == 0)
-                {
-                    Player.PowerPlantSlots = Enumerable.Range(0, 5).Select(_ => new PowerPlantSlot()).ToList();
-                }
-
-                if (Player.EnergyStorageSlots == null || Player.EnergyStorageSlots.Count == 0)
-                {
-                    Player.EnergyStorageSlots = Enumerable.Range(0, 2).Select(_ => new EnergyStorageSlot()).ToList();
-                }
-
-                if (Player.WarehouseSlots == null || Player.WarehouseSlots.Count == 0)
-                {
-                    Player.WarehouseSlots = Enumerable.Range(0, 4).Select(_ => new WarehouseSlot()).ToList();
-                }
-
-                if (Player.FactorySlots == null || Player.FactorySlots.Count == 0)
-                {
-                    Player.FactorySlots = Enumerable.Range(0, 16).Select(_ => new FactorySlot()).ToList();
-                }
+                Player.PowerPlantSlots ??= new List<PowerPlantSlot>();
+                Player.EnergyStorageSlots ??= new List<EnergyStorageSlot>();
+                Player.WarehouseSlots ??= new List<WarehouseSlot>();
+                Player.FactorySlots ??= new List<FactorySlot>();
             }
             else
             {
                 Player = new Player
                 {
-                    PowerPlantSlots = Enumerable.Range(0, 5).Select(_ => new PowerPlantSlot()).ToList(),
-                    EnergyStorageSlots = Enumerable.Range(0, 2).Select(_ => new EnergyStorageSlot()).ToList(),
-                    WarehouseSlots = Enumerable.Range(0, 4).Select(_ => new WarehouseSlot()).ToList(),
-                    FactorySlots = Enumerable.Range(0, 16).Select(_ => new FactorySlot()).ToList()
+                    PowerPlantSlots = new List<PowerPlantSlot>(),
+                    EnergyStorageSlots = new List<EnergyStorageSlot>(),
+                    WarehouseSlots = new List<WarehouseSlot>(),
+                    FactorySlots = new List<FactorySlot>()
                 };
             }
 
             InitializeEnergyBuildings();
-
-            Player.EnergyStorage.GeneratedEnergyPerTick = Player.PowerPlantSlots
-                .Where(s => s.Building != null)
-                .Sum(s => s.Building!.EnergyPerTick);
-
             UpdateTotalEnergyStorage();
         }
-
 
         public async Task Save()
         {

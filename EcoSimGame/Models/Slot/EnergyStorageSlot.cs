@@ -7,6 +7,8 @@ public class EnergyStorageSlot
     public int Capacity { get; set; } = 1000;
     public int UpgradeCost => 1000 * Level;
 
+    public SlotPosition SlotPosition { get; set; } = new SlotPosition();
+
     public void Upgrade()
     {
         Level++;

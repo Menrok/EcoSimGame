@@ -1,19 +1,18 @@
 ﻿@page "/productionmap"
 
-<div class="production-map-container" @ref="mapContainerRef" @onmousedown="mouseService.StartDrag" @onmouseup="mouseService.StopDrag" @onmousemove="mouseService.OnDrag">
+<div class="production-map-container" @ref="mapContainerRef"
+     @onmousedown="mouseService.HandleMouseDown"
+     @onmouseup="mouseService.StopDrag"
+     @onmousemove="mouseService.HandleMouseMove">
     <div class="production-map" @ref="mapRef" style="@mapStyle">
 
-        @for (int i = 0; i < game.PowerPlantSlots.Count; i++)
+        @foreach (var (slot, index) in game.PowerPlantSlots.Select((s, i) => (s, i)))
         {
-            var index = i;
-            var slot = game.PowerPlantSlots[index];
-            var pos = SlotPositions.PowerPlantSlotPositions[index];
-
-            <div class="slot power-plant" style="left:@($"{pos.X}px"); top:@($"{pos.Y}px");" @onclick="@(() => OnPowerPlantSlotClicked(index))">
+            var pos = slot.SlotPosition;
+            <div class="slot power-plant" style="left:@($"{pos.X}px"); top:@($"{pos.Y}px");" @onclick="() => OnPowerPlantSlotClicked(index)">
                 @if (slot.IsOccupied && slot.Building is not null)
                 {
                     var imageName = NameHelper.NormalizeImageName(slot.Building.Name);
-
                     <div class="power-plant-slot-content">
                         <img src=@($"images/energy/{imageName}.png") alt="@slot.Building.Name" class="power-plant-icon" />
                         <div class="production-info">+@slot.Building.EnergyPerTick energii</div>
@@ -21,18 +20,15 @@
                 }
                 else
                 {
-                    <span>Zbuduj elektrownię</span>
+                    <img src="images/slotmenu/slotelektrowni.png" alt="Elektrownia" class="emptycard-icon" />
                 }
             </div>
         }
 
-        @for (int i = 0; i < game.EnergyStorageSlots.Count; i++)
+        @foreach (var (slot, index) in game.EnergyStorageSlots.Select((s, i) => (s, i)))
         {
-            var index = i;
-            var slot = game.EnergyStorageSlots[index];
-            var pos = SlotPositions.EnergyStorageSlotPositions[index];
-
-            <div class="slot energy-storage" style="left:@($"{pos.X}px"); top:@($"{pos.Y}px");" @onclick="@(() => OnEnergyStorageSlotClicked(index))">
+            var pos = slot.SlotPosition;
+            <div class="slot energy-storage" style="left:@($"{pos.X}px"); top:@($"{pos.Y}px");" @onclick="() => OnEnergyStorageSlotClicked(index)">
                 @if (slot.IsBuilt)
                 {
                     <div class="power-plant-slot-content">
@@ -42,18 +38,15 @@
                 }
                 else
                 {
-                    <span>Zbuduj magazyn energii</span>
+                    <img src="images/slotmenu/slotmagazynuener.png" alt="Magazyn energii" class="emptycard-icon" />
                 }
             </div>
         }
 
-        @for (int i = 0; i < game.WarehouseSlots.Count; i++)
+        @foreach (var (slot, index) in game.WarehouseSlots.Select((s, i) => (s, i)))
         {
-            var index = i;
-            var slot = game.WarehouseSlots[index];
-            var pos = SlotPositions.WarehouseSlotPositions[index];
-
-            <div class="slot warehouse" style="left:@($"{pos.X}px"); top:@($"{pos.Y}px");" @onclick="@(() => OnWarehouseSlotClicked(index))">
+            var pos = slot.SlotPosition;
+            <div class="slot warehouse" style="left:@($"{pos.X}px"); top:@($"{pos.Y}px");" @onclick="() => OnWarehouseSlotClicked(index)">
                 @if (slot.IsBuilt)
                 {
                     <div class="power-plant-slot-content">
@@ -63,22 +56,18 @@
                 }
                 else
                 {
-                    <span>Zbuduj magazyn</span>
+                    <img src="images/slotmenu/slotmagazynu.png" alt="Magazyn" class="emptycard-icon" />
                 }
             </div>
         }
 
-        @for (int i = 0; i < Math.Min(game.FactorySlots.Count, SlotPositions.FactorySlotPositions.Count); i++)
+        @foreach (var (slot, index) in game.FactorySlots.Select((s, i) => (s, i)))
         {
-            var index = i;
-            var slot = game.FactorySlots[index];
-            var pos = SlotPositions.FactorySlotPositions[index];
-
-            <div class="slot factory" style="left:@($"{pos.X}px"); top:@($"{pos.Y}px");" @onclick="@(() => OnFactorySlotClicked(index))">
+            var pos = slot.SlotPosition;
+            <div class="slot factory" style="left:@($"{pos.X}px"); top:@($"{pos.Y}px");" @onclick="() => OnFactorySlotClicked(index)">
                 @if (slot.IsBuilt && slot.GetFactory() is not null)
                 {
                     var imageName = NameHelper.NormalizeImageName(slot.SelectedFactoryName ?? "fabryka");
-
                     <div class="power-plant-slot-content">
                         <img src=@($"images/factory/{imageName}.png") alt="@slot.SelectedFactoryName" class="power-plant-icon" />
                         <div class="production-info">
@@ -88,187 +77,104 @@
                 }
                 else
                 {
-                    <span>Zbuduj fabrykę</span>
+                    <img src="images/slotmenu/slotfabryki.png" alt="Fabryka" class="emptycard-icon" />
                 }
             </div>
         }
-
+        @if (isPlacingSlot)
+        {
+            <div class="slot ghost-slot" style="left:@($"{cursorX - 50}px"); top:@($"{cursorY - 50}px");">
+                <img src="@GetGhostSlotImage()" alt="Ghost Slot" class="toolbar-icon" />
+            </div>
+        }
+        /div>
+        }
     </div>
 </div>
 
-<EnergyPurchaseModal IsOpen="@isChoosing"
-                     EnergyBuildings="@EnergyProductionList.AllBuildings"
-                     OnSelectBuilding="ConfirmBuild"
-                     Close="CloseModal" />
-<EnergyStorageModal IsOpen="@isEnergyStorageModalOpen"
-                    Slot="@game.EnergyStorageSlots[selectedEnergyStorageIndex]"
-                    Close="CloseModal"
-                    OnUpgrade="UpgradeEnergyStorage" />
-<WarehouseModal IsOpen="@isWarehouseModalOpen"
-                Slot="@game.WarehouseSlots[selectedWarehouseIndex]"
-                Close="CloseModal"
-                OnUpgrade="UpgradeWarehouse" />
-<FactoryBuildModal IsOpen="@isFactoryBuildModalOpen"
-                   Slot="@game.FactorySlots[selectedFactoryIndex]"
-                   Close="CloseModal"
-                   OnFactoryBuilt="OnFactoryBuilt" />
+<div class="toolbar">
+    <button class="slot toolbar-slot" title="Elektrownia" @onclick="() => mouseService.SetPlacingSlot(SlotType.PowerPlant)">
+        <img src="images/slotmenu/slotelektrowni.png" alt="Elektrownia" class="toolbar-icon" />
+    </button>
+    <button class="slot toolbar-slot" title="Magazyn energii" @onclick="() => mouseService.SetPlacingSlot(SlotType.EnergyStorage)">
+        <img src="images/slotmenu/slotmagazynuener.png" alt="Magazyn energii" class="toolbar-icon" />
+    </button>
+    <button class="slot toolbar-slot" title="Magazyn" @onclick="() => mouseService.SetPlacingSlot(SlotType.Warehouse)">
+        <img src="images/slotmenu/slotmagazynu.png" alt="Magazyn" class="toolbar-icon" />
+    </button>
+    <button class="slot toolbar-slot" title="Fabryka" @onclick="() => mouseService.SetPlacingSlot(SlotType.Factory)">
+        <img src="images/slotmenu/slotfabryki.png" alt="Fabryka" class="toolbar-icon" />
+    </button>
+</div>
 
-<FactoryManageModal IsOpen="@isFactoryManageModalOpen"
-                    Slot="@game.FactorySlots[selectedFactoryIndex]"
-                    Close="CloseModal"
-                    OnFactoryUpdated="OnFactoryUpdated" />
+@if (isChoosing)
+{
+    <EnergyPurchaseModal IsOpen="true"
+                         EnergyBuildings="@EnergyProductionList.AllBuildings"
+                         OnSelectBuilding="ConfirmBuild"
+                         Close="CloseModal" />
+}
 
-z
+@if (isEnergyStorageModalOpen && selectedEnergyStorageIndex >= 0 && selectedEnergyStorageIndex < game.EnergyStorageSlots.Count)
+{
+    <EnergyStorageModal IsOpen="true"
+                        Slot="@game.EnergyStorageSlots[selectedEnergyStorageIndex]"
+                        Close="CloseModal"
+                        OnUpgrade="UpgradeEnergyStorage" />
+}
+
+@if (isWarehouseModalOpen && selectedWarehouseIndex >= 0 && selectedWarehouseIndex < game.WarehouseSlots.Count)
+{
+    <WarehouseModal IsOpen="true"
+                    Slot="@game.WarehouseSlots[selectedWarehouseIndex]"
+                    Close="CloseModal"
+                    OnUpgrade="UpgradeWarehouse" />
+}
+
+@if (isFactoryBuildModalOpen && selectedFactoryIndex >= 0 && selectedFactoryIndex < game.FactorySlots.Count)
+{
+    <FactoryBuildModal IsOpen="true"
+                       Slot="@game.FactorySlots[selectedFactoryIndex]"
+                       Close="CloseModal"
+                       OnFactoryBuilt="OnFactoryBuilt" />
+}
+
+@if (isFactoryManageModalOpen && selectedFactoryIndex >= 0 && selectedFactoryIndex < game.FactorySlots.Count)
+{
+    <FactoryManageModal IsOpen="true"
+                        Slot="@game.FactorySlots[selectedFactoryIndex]"
+                        Close="CloseModal"
+                        OnFactoryUpdated="OnFactoryUpdated" />
+}
+
 @code {
-    private bool isChoosing = false;
+    private bool isChoosing;
+    private bool isEnergyStorageModalOpen;
+    private bool isWarehouseModalOpen;
+    private bool isFactoryBuildModalOpen;
+    private bool isFactoryManageModalOpen;
+
     private int selectedSlotIndex;
-    private bool isEnergyStorageModalOpen = false;
     private int selectedEnergyStorageIndex;
-    private bool isWarehouseModalOpen = false;
     private int selectedWarehouseIndex;
-    private bool isFactoryBuildModalOpen = false;
-    private bool isFactoryManageModalOpen = false;
     private int selectedFactoryIndex;
 
     private ElementReference mapRef;
     private ElementReference mapContainerRef;
+
     private ProductionMapState mapState = new();
     private ProductionMapMouseService mouseService;
 
     private string? errorMessage;
     private string mapStyle => mapState.GetTransformStyle();
+    private bool isPlacingSlot => mouseService.IsPlacingSlot;
+    private double cursorX => mouseService.CursorX;
+    private double cursorY => mouseService.CursorY;
 
     protected override void OnInitialized()
     {
-        mouseService = new ProductionMapMouseService(mapState);
-        game.InitializePowerSlots();
-        game.InitializeEnergyStorageSlots();
-        game.InitializeWarehouseSlots();
-        game.InitializeFactorySlots();
+        mouseService = new ProductionMapMouseService(mapState, game, StateHasChanged);
         game.OnUpdate += StateHasChanged;
-    }
-
-    private void OnPowerPlantSlotClicked(int index)
-    {
-        selectedSlotIndex = index;
-        isChoosing = true;
-        StateHasChanged();
-    }
-
-    private void OnEnergyStorageSlotClicked(int index)
-    {
-        if (index < 0 || index >= game.EnergyStorageSlots.Count)
-            return;
-
-        selectedEnergyStorageIndex = index;
-        isEnergyStorageModalOpen = true;
-    }
-
-    private void OnWarehouseSlotClicked(int index)
-    {
-        if (index < 0 || index >= game.WarehouseSlots.Count)
-            return;
-
-        selectedWarehouseIndex = index;
-        isWarehouseModalOpen = true;
-    }
-
-    private void OnFactorySlotClicked(int index)
-    {
-        if (index < 0 || index >= game.FactorySlots.Count)
-            return;
-
-        selectedFactoryIndex = index;
-
-        var slot = game.FactorySlots[index];
-
-        if (!slot.IsBuilt)
-            isFactoryBuildModalOpen = true;
-        else
-            isFactoryManageModalOpen = true;
-    }
-
-    private Task CloseEnergyStorageModal()
-    {
-        isEnergyStorageModalOpen = false;
-        return Task.CompletedTask;
-    }
-
-    private async Task UpgradeEnergyStorage()
-    {
-        game.EnergyStorageSlots[selectedEnergyStorageIndex].IsBuilt = true;
-        isEnergyStorageModalOpen = false;
-        await game.Save();
-        StateHasChanged();
-    }
-
-
-    private async Task UpgradeWarehouse()
-    {
-        game.WarehouseSlots[selectedWarehouseIndex].IsBuilt = true;
-        isWarehouseModalOpen = false;
-        await game.Save();
-        StateHasChanged();
-    }
-
-
-    private async Task OnFactoryUpdated()
-    {
-        isFactoryManageModalOpen = false;
-        await game.Save();
-        StateHasChanged();
-    }
-
-    private async Task OnFactoryBuilt()
-    {
-        game.FactorySlots[selectedFactoryIndex].IsBuilt = true;
-        isFactoryBuildModalOpen = false;
-        await game.Save();
-        StateHasChanged();
-    }
-
-
-    private async Task RefreshPage()
-    {
-        isEnergyStorageModalOpen = false;
-        await game.Save();
-    }
-
-    private async Task ConfirmBuild(EnergyProduction building)
-    {
-        var i = selectedSlotIndex;
-
-        if (i < 0 || i >= game.PowerPlantSlots.Count)
-        {
-            errorMessage = "Nieprawidłowy slot!";
-            return;
-        }
-
-        if (game.Player.Money >= building.Cost)
-        {
-            game.Player.Money -= building.Cost;
-
-            game.SetPowerPlant(i, building);
-
-            await game.Save();
-
-            isChoosing = false;
-            StateHasChanged();
-        }
-        else
-        {
-            errorMessage = "Za mało pieniędzy!";
-        }
-    }
-
-
-    private void CloseModal()
-    {
-        isChoosing = false;
-        isEnergyStorageModalOpen = false;
-        isWarehouseModalOpen = false;
-        isFactoryBuildModalOpen = false;
-        isFactoryManageModalOpen = false;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -279,15 +185,125 @@ z
             mapState.ContainerWidth = size.Width;
             mapState.ContainerHeight = size.Height;
 
-            mapState.OffsetX = (mapState.ContainerWidth - mapState.MapWidth) / 2;
-            mapState.OffsetY = (mapState.ContainerHeight - mapState.MapHeight) / 2;
-
-            mapState.OffsetX = (int)mapState.OffsetX;
-            mapState.OffsetY = (int)mapState.OffsetY;
-
+            CenterMap();
             StateHasChanged();
         }
     }
+
+    private void CenterMap()
+    {
+        mapState.OffsetX = (mapState.ContainerWidth - mapState.MapWidth) / 2;
+        mapState.OffsetY = (mapState.ContainerHeight - mapState.MapHeight) / 2;
+        mapState.OffsetX = (int)mapState.OffsetX;
+        mapState.OffsetY = (int)mapState.OffsetY;
+    }
+
+    private void HandleMouseDown(MouseEventArgs e) => _ = mouseService.HandleMouseDown(e);
+
+    private void OnMouseMove(MouseEventArgs e) => mouseService.HandleMouseMove(e);
+
+    private void StartPlacingSlot(SlotType type) => mouseService.SetPlacingSlot(type);
+
+    private void OnPowerPlantSlotClicked(int index)
+    {
+        selectedSlotIndex = index;
+        isChoosing = true;
+    }
+
+    private void OnEnergyStorageSlotClicked(int index)
+    {
+        selectedEnergyStorageIndex = index;
+        isEnergyStorageModalOpen = true;
+    }
+
+    private void OnWarehouseSlotClicked(int index)
+    {
+        selectedWarehouseIndex = index;
+        isWarehouseModalOpen = true;
+    }
+
+    private void OnFactorySlotClicked(int index)
+    {
+        selectedFactoryIndex = index;
+        if (!game.FactorySlots[index].IsBuilt)
+            isFactoryBuildModalOpen = true;
+        else
+            isFactoryManageModalOpen = true;
+    }
+
+    private async Task ConfirmBuild(EnergyProduction building)
+    {
+        if (selectedSlotIndex >= 0 && selectedSlotIndex < game.PowerPlantSlots.Count && game.Player.Money >= building.Cost)
+        {
+            game.Player.Money -= building.Cost;
+            game.SetPowerPlant(selectedSlotIndex, building);
+            await game.Save();
+            isChoosing = false;
+            StateHasChanged();
+        }
+        else
+        {
+            errorMessage = "Nieprawidłowy slot lub za mało pieniędzy!";
+        }
+    }
+
+    private async Task UpgradeEnergyStorage()
+    {
+        if (selectedEnergyStorageIndex >= 0 && selectedEnergyStorageIndex < game.EnergyStorageSlots.Count)
+        {
+            game.EnergyStorageSlots[selectedEnergyStorageIndex].IsBuilt = true;
+            isEnergyStorageModalOpen = false;
+            await game.Save();
+            StateHasChanged();
+        }
+    }
+
+    private async Task UpgradeWarehouse()
+    {
+        if (selectedWarehouseIndex >= 0 && selectedWarehouseIndex < game.WarehouseSlots.Count)
+        {
+            game.WarehouseSlots[selectedWarehouseIndex].IsBuilt = true;
+            isWarehouseModalOpen = false;
+            await game.Save();
+            StateHasChanged();
+        }
+    }
+
+    private async Task OnFactoryBuilt()
+    {
+        if (selectedFactoryIndex >= 0 && selectedFactoryIndex < game.FactorySlots.Count)
+        {
+            game.FactorySlots[selectedFactoryIndex].IsBuilt = true;
+            isFactoryBuildModalOpen = false;
+            await game.Save();
+            StateHasChanged();
+        }
+    }
+
+    private async Task OnFactoryUpdated()
+    {
+        isFactoryManageModalOpen = false;
+        await game.Save();
+        StateHasChanged();
+    }
+
+    private void CloseModal()
+    {
+        isChoosing = false;
+        isEnergyStorageModalOpen = false;
+        isWarehouseModalOpen = false;
+        isFactoryBuildModalOpen = false;
+        isFactoryManageModalOpen = false;
+    }
+
+    private string GetGhostSlotImage() => mouseService.CurrentPlacingSlotType switch
+    {
+        SlotType.PowerPlant => "images/slotmenu/slotelektrowni.png",
+        SlotType.EnergyStorage => "images/slotmenu/slotmagazynuener.png",
+        SlotType.Warehouse => "images/slotmenu/slotmagazynu.png",
+        SlotType.Factory => "images/slotmenu/slotfabryki.png",
+        _ => ""
+    };
 
     public void Dispose() => game.OnUpdate -= StateHasChanged;
 }

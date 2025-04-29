@@ -7,6 +7,7 @@ public class WarehouseSlot
     public int Capacity { get; set; } = 100;
     public decimal UpgradeCost { get; set; } = 1000;
 
+    public SlotPosition SlotPosition { get; set; } = new SlotPosition();
     public void Upgrade()
     {
         Level++;

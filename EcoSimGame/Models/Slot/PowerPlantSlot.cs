@@ -8,4 +8,5 @@ public class PowerPlantSlot
     public EnergyProduction? Building { get; set; }
 
     public int EnergyPerTick => Building?.EnergyPerTick ?? 0;
+    public SlotPosition SlotPosition { get; set; } = new SlotPosition();
 }

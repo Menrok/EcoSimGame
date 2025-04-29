@@ -13,6 +13,8 @@ public class FactorySlot
 
     private DateTime lastProductionTime = DateTime.Now;
 
+    public SlotPosition SlotPosition { get; set; } = new SlotPosition();
+
     public Factory? GetFactory()
     {
         if (string.IsNullOrEmpty(SelectedFactoryName))
